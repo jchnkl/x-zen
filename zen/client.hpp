@@ -7,7 +7,9 @@
 #include "../x/window.hpp"
 #include "../x/interface.hpp"
 
-namespace x {
+namespace zen {
+
+using namespace x;
 
 class client;
 
@@ -36,6 +38,6 @@ class client : public window
   private:
 }; // class client
 
-}; // namespace x
+}; // namespace zen
 
 #endif // X_CLIENT_HPP
