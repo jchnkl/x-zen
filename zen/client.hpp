@@ -26,6 +26,11 @@ class client : public window
       s.insert(this);
     }
 
+    ~client(void)
+    {
+      m_s.remove(this);
+    }
+
     priority_masks
     masks(void)
     {

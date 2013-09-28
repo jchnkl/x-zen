@@ -22,6 +22,11 @@ class client_manager
       s.insert(this);
     }
 
+    ~client_manager(void)
+    {
+      m_s.remove(this);
+    }
+
     priority_masks
     masks(void)
     {
