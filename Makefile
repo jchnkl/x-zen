@@ -8,7 +8,8 @@ INCS=x/event.hpp \
 		 x/interface.hpp \
 		 x/connection.hpp \
 		 x/drawable.hpp \
-		 x/window.hpp
+		 x/window.hpp \
+		 zen/client.hpp
 
 OBJS=$(SRCS:%.cpp=%.o)
 
