@@ -20,9 +20,11 @@ class client : public window
              , public interface::event::sink<xcb_configure_notify_event_t>
              {
   public:
-    client(connection & c, xcb_window_t w)
-      : window(c, w)
-    {}
+    client(connection & c, interface::event::source & s, xcb_window_t w)
+      : window(c, w), m_s(s)
+    {
+      s.insert(this);
+    }
 
     virtual priority_masks
     masks(void)
@@ -36,6 +38,7 @@ class client : public window
     }
 
   private:
+    interface::event::source & m_s;
 }; // class client
 
 }; // namespace zen
