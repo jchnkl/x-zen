@@ -6,7 +6,9 @@ SRCS=main.cpp
 
 INCS=x/event.hpp \
 		 x/interface.hpp \
-		 x/connection.hpp
+		 x/connection.hpp \
+		 x/drawable.hpp \
+		 x/window.hpp
 
 OBJS=$(SRCS:%.cpp=%.o)
 
