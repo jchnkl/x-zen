@@ -26,13 +26,13 @@ class client : public window
       s.insert(this);
     }
 
-    virtual priority_masks
+    priority_masks
     masks(void)
     {
       return { { UINT_MAX, XCB_CONFIGURE_NOTIFY } };
     }
 
-    virtual void
+    void
     handle(xcb_configure_notify_event_t * e)
     {
     }
