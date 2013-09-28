@@ -1,6 +1,7 @@
 #ifndef X_CLIENT_MANAGER_HPP
 #define X_CLIENT_MANAGER_HPP
 
+#include <iostream>
 #include <algorithm>
 #include <deque>
 #include <unordered_map>
@@ -17,6 +18,8 @@ class client_manager
   , public interface::event::sink<xcb_destroy_notify_event_t>
 {
   public:
+    friend std::ostream & operator<<(std::ostream &, const client_manager &);
+
     client_manager(connection & c, interface::event::source & s)
       : m_c(c), m_s(s)
     {
@@ -68,7 +71,21 @@ class client_manager
 
     std::deque<xcb_window_t> client_order;
     std::unordered_map<xcb_window_t, client_ptr> clients;
-}; // class client
+}; // class client_manager
+
+std::ostream & operator<<(std::ostream & os, const client_manager & cm)
+{
+  std::size_t i = 0;
+  for (i = 0; i < cm.client_order.size(); ++i) {
+    os << *cm.clients.at(cm.client_order[i]);
+
+    if (i < cm.client_order.size() - 1) {
+      os << ", ";
+    }
+  }
+
+  return os;
+}
 
 }; // namespace zen
 
