@@ -2,11 +2,16 @@
 #define X_CLIENT_HPP
 
 #include <climits>
+#include <memory>
 
 #include "../x/window.hpp"
 #include "../x/interface.hpp"
 
 namespace x {
+
+class client;
+
+typedef std::shared_ptr<client> client_ptr;
 
 class client : public window
              , public interface::event::dispatcher
