@@ -1,6 +1,7 @@
 #ifndef X_CLIENT_HPP
 #define X_CLIENT_HPP
 
+#include <iostream>
 #include <climits>
 #include <memory>
 
@@ -20,6 +21,8 @@ class client : public window
              , public interface::event::sink<xcb_configure_notify_event_t>
              {
   public:
+    friend std::ostream & operator<<(std::ostream &, const client &);
+
     client(connection & c, interface::event::source & s, xcb_window_t w)
       : window(c, w), m_s(s)
     {
@@ -45,6 +48,11 @@ class client : public window
   private:
     interface::event::source & m_s;
 }; // class client
+
+std::ostream & operator<<(std::ostream & os, const client & c)
+{
+  return os << c.id();
+}
 
 }; // namespace zen
 
