@@ -1,8 +1,9 @@
 #ifndef X_CLIENT_MANAGER_HPP
 #define X_CLIENT_MANAGER_HPP
 
-#include<deque>
-#include<unordered_map>
+#include <algorithm>
+#include <deque>
+#include <unordered_map>
 
 #include "client.hpp"
 
@@ -37,11 +38,28 @@ class client_manager
     void
     handle(xcb_create_notify_event_t * e)
     {
+      insert(e->window);
     }
 
     void
     handle(xcb_destroy_notify_event_t * e)
     {
+      remove(e->window);
+    }
+
+    void
+    insert(xcb_window_t window)
+    {
+      client_order.push_front(window);
+      clients[window] = client_ptr(new client(m_c, m_s, window));
+    }
+
+    void
+    remove(xcb_window_t window)
+    {
+      client_order.erase(
+          std::find(client_order.begin(), client_order.end(), window));
+      clients.erase(window);
     }
 
   private:
