@@ -41,7 +41,14 @@ class client : public window
                     | XCB_EVENT_MASK_BUTTON_RELEASE
                     | XCB_EVENT_MASK_BUTTON_MOTION,
                     XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE,
-                    XCB_BUTTON_INDEX_1, XCB_MOD_MASK_ANY);
+                    XCB_BUTTON_INDEX_1, XCB_MOD_MASK_4);
+
+        grab_button(false,
+                    XCB_EVENT_MASK_BUTTON_PRESS
+                    | XCB_EVENT_MASK_BUTTON_RELEASE
+                    | XCB_EVENT_MASK_BUTTON_MOTION,
+                    XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE,
+                    XCB_BUTTON_INDEX_3, XCB_MOD_MASK_4);
 
       }
     }
@@ -90,14 +97,31 @@ class client : public window
       configure(e->value_mask, values);
     }
 
+    /**
+     * Handles move and resize actions
+     */
     void
     handle(xcb_button_press_event_t * e)
     {
       if (e->event != m_window) return;
 
       if ((e->response_type & ~0x80) == XCB_BUTTON_PRESS) {
-        m_pointer_offset_x = e->event_x;
-        m_pointer_offset_y = e->event_y;
+        if (e->detail == XCB_BUTTON_INDEX_1) {
+          m_move = true;
+          m_pointer_offset_x = e->event_x;
+          m_pointer_offset_y = e->event_y;
+
+        } else if (e->detail == XCB_BUTTON_INDEX_3) {
+          m_resize = true;
+          auto reply = get_geometry();
+          m_pointer_offset_x = reply->width - e->event_x;
+          m_pointer_offset_y = reply->height - e->event_y;
+        }
+
+      } else { // XCB_BUTTON_RELEASE
+        m_move = false;
+        m_resize = false;
+
       }
     }
 
@@ -106,16 +130,25 @@ class client : public window
     {
       if (e->event != m_window) return;
 
-      configure(XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y,
-                { static_cast<uint32_t>(e->root_x - m_pointer_offset_x),
-                  static_cast<uint32_t>(e->root_y - m_pointer_offset_y) });
+      if (m_move) {
+        configure(XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y,
+                  { static_cast<uint32_t>(e->root_x - m_pointer_offset_x),
+                    static_cast<uint32_t>(e->root_y - m_pointer_offset_y) });
+
+      } else if (m_resize) {
+        configure(XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
+                  { static_cast<uint32_t>(m_pointer_offset_x + e->event_x),
+                    static_cast<uint32_t>(m_pointer_offset_y + e->event_y) });
+      }
     }
 
   private:
     interface::event::source & m_s;
 
-    unsigned int m_pointer_offset_x;
-    unsigned int m_pointer_offset_y;
+    bool m_move = false;
+    bool m_resize = false;
+    unsigned int m_pointer_offset_x = 0;
+    unsigned int m_pointer_offset_y = 0;
 }; // class client
 
 std::ostream & operator<<(std::ostream & os, const client & c)
