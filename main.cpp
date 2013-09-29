@@ -7,7 +7,10 @@ int main(int argc, char ** argv)
   x::connection c("");
   c.change_window_attributes(c.root(),
                              XCB_CW_EVENT_MASK,
-                             { XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY });
+                             { XCB_EVENT_MASK_SUBSTRUCTURE_REDIRECT
+                             | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY
+                             });
+
   x::event::source s(c);
 
   zen::client_manager cm(c, s);
