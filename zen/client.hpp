@@ -116,36 +116,22 @@ class client : public window
     {
       if (e->event != m_window) return;
 
-      auto start = [&](xcb_cursor_t cursor) {
-        m_s.insert({ { 0, XCB_MOTION_NOTIFY } }, this);
-        *(m_c.grab_pointer(false, m_window,
-                           XCB_EVENT_MASK_BUTTON_MOTION
-                           | XCB_EVENT_MASK_BUTTON_RELEASE,
-                           XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
-                           XCB_NONE, cursor, XCB_TIME_CURRENT_TIME));
-      };
-
-      auto finish = [&]() {
-        m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
-        m_s.remove({ { 0, XCB_MOTION_NOTIFY } }, this);
-      };
-
       if ((e->response_type & ~0x80) == XCB_BUTTON_PRESS) {
         if (e->detail == XCB_BUTTON_INDEX_1) {
           m_move = true;
           m_pointer_offset_x = e->event_x;
           m_pointer_offset_y = e->event_y;
 
-          start(m_move_cursor);
+          begin_motion(m_move_cursor);
 
         } else if (e->detail == XCB_BUTTON_INDEX_3) {
           m_resize = true;
 
-          start(m_resize_cursor);
+          begin_motion(m_resize_cursor);
         }
 
       } else { // XCB_BUTTON_RELEASE
-        finish();
+        end_motion();
         if (e->detail == XCB_BUTTON_INDEX_1) {
           m_move = false;
 
@@ -183,6 +169,24 @@ class client : public window
     bool m_resize = false;
     unsigned int m_pointer_offset_x = 0;
     unsigned int m_pointer_offset_y = 0;
+
+    void
+    begin_motion(xcb_cursor_t cursor)
+    {
+      m_s.insert({ { 0, XCB_MOTION_NOTIFY } }, this);
+      *(m_c.grab_pointer(false, m_window,
+                         XCB_EVENT_MASK_BUTTON_MOTION
+                         | XCB_EVENT_MASK_BUTTON_RELEASE,
+                         XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
+                         XCB_NONE, cursor, XCB_TIME_CURRENT_TIME));
+    }
+
+    void
+    end_motion(void)
+    {
+      m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
+      m_s.remove({ { 0, XCB_MOTION_NOTIFY } }, this);
+    }
 }; // class client
 
 std::ostream & operator<<(std::ostream & os, const client & c)
