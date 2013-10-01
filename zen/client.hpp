@@ -50,6 +50,19 @@ class client : public window
                     XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE,
                     XCB_BUTTON_INDEX_3, XCB_MOD_MASK_4);
 
+
+        xcb_font_t font = m_c.generate_id();
+        m_c.open_font(font, "cursor");
+
+        m_move_cursor = m_c.generate_id();
+        m_c.create_glyph_cursor(m_move_cursor, font, font, 52, 52 + 1,
+                                0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_resize_cursor = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor, font, font, 14, 14 + 1,
+                                0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_c.close_font(font);
       }
     }
 
@@ -59,6 +72,9 @@ class client : public window
 
       ungrab_key(XCB_GRAB_ANY, XCB_MOD_MASK_ANY);
       ungrab_button(XCB_BUTTON_INDEX_ANY, XCB_MOD_MASK_ANY);
+
+      m_c.free_cursor(m_move_cursor);
+      m_c.free_cursor(m_resize_cursor);
     }
 
     priority_masks
@@ -144,6 +160,9 @@ class client : public window
 
   private:
     interface::event::source & m_s;
+
+    xcb_cursor_t m_move_cursor;
+    xcb_cursor_t m_resize_cursor;
 
     bool m_move = false;
     bool m_resize = false;
