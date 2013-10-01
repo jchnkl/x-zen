@@ -37,16 +37,12 @@ class client : public window
                                              });
 
         grab_button(false,
-                    XCB_EVENT_MASK_BUTTON_PRESS
-                    | XCB_EVENT_MASK_BUTTON_RELEASE
-                    | XCB_EVENT_MASK_BUTTON_MOTION,
+                    XCB_EVENT_MASK_BUTTON_PRESS,
                     XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE,
                     XCB_BUTTON_INDEX_1, XCB_MOD_MASK_4);
 
         grab_button(false,
-                    XCB_EVENT_MASK_BUTTON_PRESS
-                    | XCB_EVENT_MASK_BUTTON_RELEASE
-                    | XCB_EVENT_MASK_BUTTON_MOTION,
+                    XCB_EVENT_MASK_BUTTON_PRESS,
                     XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE,
                     XCB_BUTTON_INDEX_3, XCB_MOD_MASK_4);
 
@@ -83,7 +79,6 @@ class client : public window
       return { { UINT_MAX, XCB_CONFIGURE_REQUEST }
              , { UINT_MAX, XCB_BUTTON_PRESS }
              , { UINT_MAX, XCB_BUTTON_RELEASE }
-             , { UINT_MAX, XCB_MOTION_NOTIFY }
              , { UINT_MAX, XCB_MAP_REQUEST }
              };
     }
@@ -121,22 +116,42 @@ class client : public window
     {
       if (e->event != m_window) return;
 
+      auto start = [&](xcb_cursor_t cursor) {
+        m_s.insert({ { 0, XCB_MOTION_NOTIFY } }, this);
+        *(m_c.grab_pointer(false, m_window,
+                           XCB_EVENT_MASK_BUTTON_MOTION
+                           | XCB_EVENT_MASK_BUTTON_RELEASE,
+                           XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
+                           XCB_NONE, cursor, XCB_TIME_CURRENT_TIME));
+      };
+
+      auto finish = [&]() {
+        m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
+        m_s.remove({ { 0, XCB_MOTION_NOTIFY } }, this);
+      };
+
       if ((e->response_type & ~0x80) == XCB_BUTTON_PRESS) {
         if (e->detail == XCB_BUTTON_INDEX_1) {
           m_move = true;
           m_pointer_offset_x = e->event_x;
           m_pointer_offset_y = e->event_y;
 
+          start(m_move_cursor);
+
         } else if (e->detail == XCB_BUTTON_INDEX_3) {
           m_resize = true;
-          auto reply = get_geometry();
-          m_pointer_offset_x = reply->width - e->event_x;
-          m_pointer_offset_y = reply->height - e->event_y;
+
+          start(m_resize_cursor);
         }
 
       } else { // XCB_BUTTON_RELEASE
-        m_move = false;
-        m_resize = false;
+        finish();
+        if (e->detail == XCB_BUTTON_INDEX_1) {
+          m_move = false;
+
+        } else if (e->detail == XCB_BUTTON_INDEX_3) {
+          m_resize = false;
+        }
 
       }
     }
@@ -153,8 +168,8 @@ class client : public window
 
       } else if (m_resize) {
         configure(XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
-                  { static_cast<uint32_t>(m_pointer_offset_x + e->event_x),
-                    static_cast<uint32_t>(m_pointer_offset_y + e->event_y) });
+                  { static_cast<uint32_t>(e->event_x),
+                    static_cast<uint32_t>(e->event_y) });
       }
     }
 
