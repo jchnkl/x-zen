@@ -2,24 +2,32 @@ LIBS=xcb
 CXXFLAGS=$(shell pkg-config --cflags ${LIBS}) -std=c++11 -Wall -O0 -g
 LDFLAGS=$(shell pkg-config --libs ${LIBS})
 
-SRCS=main.cpp
+CPPSRCS=main.cpp
 
-INCS=x/event.hpp \
-		 x/interface.hpp \
-		 x/connection.hpp \
-		 x/drawable.hpp \
-		 x/window.hpp \
-		 zen/client.hpp \
-		 zen/client_manager.hpp
+HPPSRCS=x/event.hpp \
+				x/request.hpp \
+				x/requests.hpp \
+				x/interface.hpp \
+				x/connection.hpp \
+				x/drawable.hpp \
+				x/window.hpp \
+				zen/pointer.hpp \
+				zen/client.hpp \
+				zen/client_manager.hpp
 
-OBJS=$(SRCS:%.cpp=%.o)
+CPPOBJS=$(CPPSRCS:%.cpp=%.o)
+HPPOBJS=$(HPPSRCS:%.hpp=%.hpp.gch)
 
 EXE=x:zen
 
-all: ${INCS} ${OBJS}
-	${CXX} ${CXXFLAGS} ${LDFLAGS} ${INCS} ${OBJS} -o ${EXE}
+all: ${HPPOBJS} ${CPPOBJS}
+	${CXX} ${CXXFLAGS} ${LDFLAGS} ${CPPOBJS} -o ${EXE}
+
+%.hpp.gch: %.hpp
+	rm -f ${CPPOBJS}
+	${CXX} ${CXXFLAGS} -c $<
 
 clean:
-	rm -f ${EXE} ${OBJS}
+	rm -f ${EXE} ${HPPOBJS} ${CPPOBJS}
 
 .PHONY: clean
