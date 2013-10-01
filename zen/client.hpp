@@ -119,13 +119,21 @@ class client : public window
       if ((e->response_type & ~0x80) == XCB_BUTTON_PRESS) {
         if (e->detail == XCB_BUTTON_INDEX_1) {
           m_move = true;
-          m_pointer_offset_x = e->event_x;
-          m_pointer_offset_y = e->event_y;
+          m_pointer_position_x = e->event_x;
+          m_pointer_position_y = e->event_y;
 
           begin_motion(m_move_cursor);
 
         } else if (e->detail == XCB_BUTTON_INDEX_3) {
           m_resize = true;
+
+          m_pointer_position_x = e->event_x;
+          m_pointer_position_y = e->event_y;
+
+          auto reply = get_geometry();
+          m_old_width = reply->width;
+          m_old_height = reply->height;
+          warp_pointer(reply->width, reply->height);
 
           begin_motion(m_resize_cursor);
         }
@@ -137,6 +145,12 @@ class client : public window
 
         } else if (e->detail == XCB_BUTTON_INDEX_3) {
           m_resize = false;
+
+          auto reply = get_geometry();
+          warp_pointer(m_pointer_position_x
+                         * (reply->width / (double)m_old_width),
+                       m_pointer_position_y
+                         * (reply->height / (double)m_old_height));
         }
 
       }
@@ -149,8 +163,8 @@ class client : public window
 
       if (m_move) {
         configure(XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y,
-                  { static_cast<uint32_t>(e->root_x - m_pointer_offset_x),
-                    static_cast<uint32_t>(e->root_y - m_pointer_offset_y) });
+                  { static_cast<uint32_t>(e->root_x - m_pointer_position_x),
+                    static_cast<uint32_t>(e->root_y - m_pointer_position_y) });
 
       } else if (m_resize) {
         configure(XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
@@ -167,8 +181,10 @@ class client : public window
 
     bool m_move = false;
     bool m_resize = false;
-    unsigned int m_pointer_offset_x = 0;
-    unsigned int m_pointer_offset_y = 0;
+    unsigned int m_old_width = 0;
+    unsigned int m_old_height = 0;
+    unsigned int m_pointer_position_x = 0;
+    unsigned int m_pointer_position_y = 0;
 
     void
     begin_motion(xcb_cursor_t cursor)
