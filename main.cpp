@@ -1,7 +1,7 @@
 #include "x/connection.hpp"
 #include "x/event.hpp"
 #include "zen/client_manager.hpp"
-#include "zen/input.hpp"
+#include "zen/pointer.hpp"
 
 int main(int argc, char ** argv)
 {
