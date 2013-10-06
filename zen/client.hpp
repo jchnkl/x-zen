@@ -19,6 +19,8 @@ typedef std::shared_ptr<client> client_ptr;
 
 class client : public x::window
              , public event::dispatcher
+             , public event::sink<xcb_enter_notify_event_t>
+             , public event::sink<xcb_focus_in_event_t>
              , public event::sink<xcb_map_request_event_t>
              , public event::sink<xcb_button_press_event_t>
              , public event::sink<xcb_motion_notify_event_t>
@@ -33,9 +35,16 @@ class client : public x::window
       s.insert(this);
       auto reply = get_attributes();
       if (! reply->override_redirect) {
-        change_attributes(XCB_CW_EVENT_MASK, { XCB_EVENT_MASK_KEY_PRESS
-                                             | XCB_EVENT_MASK_KEY_RELEASE
-                                             });
+        change_attributes(XCB_CW_BORDER_PIXEL | XCB_CW_EVENT_MASK,
+                          { 0x000000ff
+                          , XCB_EVENT_MASK_KEY_PRESS
+                          | XCB_EVENT_MASK_KEY_RELEASE
+                          | XCB_EVENT_MASK_ENTER_WINDOW
+                          | XCB_EVENT_MASK_LEAVE_WINDOW
+                          | XCB_EVENT_MASK_FOCUS_CHANGE
+                          });
+
+        configure(XCB_CONFIG_WINDOW_BORDER_WIDTH, { 1 });
 
         grab_button(false,
                     XCB_EVENT_MASK_BUTTON_PRESS,
@@ -81,6 +90,10 @@ class client : public x::window
              , { UINT_MAX, XCB_BUTTON_PRESS }
              , { UINT_MAX, XCB_BUTTON_RELEASE }
              , { UINT_MAX, XCB_MAP_REQUEST }
+             , { UINT_MAX, XCB_ENTER_NOTIFY }
+             , { UINT_MAX, XCB_LEAVE_NOTIFY }
+             , { UINT_MAX, XCB_FOCUS_IN }
+             , { UINT_MAX, XCB_FOCUS_OUT }
              };
     }
 
@@ -171,6 +184,31 @@ class client : public x::window
         configure(XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
                   { static_cast<uint32_t>(e->event_x),
                     static_cast<uint32_t>(e->event_y) });
+      }
+    }
+
+    void
+    handle(xcb_enter_notify_event_t * e)
+    {
+      if (e->event != m_window) return;
+
+      if ((e->response_type & ~0x80) == XCB_ENTER_NOTIFY) {
+        change_attributes(XCB_CW_BORDER_PIXEL, { 0x00ff0000 });
+      } else { // XCB_LEAVE_NOTIFY
+        change_attributes(XCB_CW_BORDER_PIXEL, { 0x000000ff });
+      }
+    }
+
+    void
+    handle(xcb_focus_in_event_t * e)
+    {
+      return;
+      if (e->event != m_window) return;
+
+      if ((e->response_type & ~0x80) == XCB_FOCUS_IN) {
+        change_attributes(XCB_CW_BORDER_PIXEL, { 0x00ff0000 });
+      } else { // XCB_FOCUS_OUT
+        change_attributes(XCB_CW_BORDER_PIXEL, { 0x000000ff });
       }
     }
 
