@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <climits>
+#include <cmath>
 #include <memory>
 
 #include "../x/window.hpp"
@@ -10,24 +11,24 @@
 
 namespace zen {
 
-using namespace x;
+namespace event = x::interface::event;
 
 class client;
 
 typedef std::shared_ptr<client> client_ptr;
 
-class client : public window
-             , public interface::event::dispatcher
-             , public interface::event::sink<xcb_map_request_event_t>
-             , public interface::event::sink<xcb_button_press_event_t>
-             , public interface::event::sink<xcb_motion_notify_event_t>
-             , public interface::event::sink<xcb_configure_request_event_t>
+class client : public x::window
+             , public event::dispatcher
+             , public event::sink<xcb_map_request_event_t>
+             , public event::sink<xcb_button_press_event_t>
+             , public event::sink<xcb_motion_notify_event_t>
+             , public event::sink<xcb_configure_request_event_t>
              {
   public:
     friend std::ostream & operator<<(std::ostream &, const client &);
 
-    client(connection & c, interface::event::source & s, xcb_window_t w)
-      : window(c, w), m_s(s)
+    client(x::connection & c, event::source & s, xcb_window_t w)
+      : x::window(c, w), m_s(s)
     {
       s.insert(this);
       auto reply = get_attributes();
@@ -174,7 +175,7 @@ class client : public window
     }
 
   private:
-    interface::event::source & m_s;
+    event::source & m_s;
 
     xcb_cursor_t m_move_cursor;
     xcb_cursor_t m_resize_cursor;
