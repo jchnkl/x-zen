@@ -171,7 +171,7 @@ class client : public x::window
           m_pointer_position_x = e->event_x;
           m_pointer_position_y = e->event_y;
 
-          begin_motion(m_move_cursor);
+          begin_motion();
 
         } else if (e->detail == XCB_BUTTON_INDEX_3) {
           m_resize = true;
@@ -179,12 +179,72 @@ class client : public x::window
           m_pointer_position_x = e->event_x;
           m_pointer_position_y = e->event_y;
 
+          m_origin_x = e->root_x;
+          m_origin_y = e->root_y;
+
           auto reply = get_geometry();
+          m_old_x = reply->x;
+          m_old_y = reply->y;
           m_old_width = reply->width;
           m_old_height = reply->height;
-          warp_pointer(reply->width, reply->height);
 
-          begin_motion(m_resize_cursor);
+          double norm_x = (double)(e->event_x - reply->width / 2) / (reply->width / 2);
+          double norm_y = (double)(e->event_y - reply->height / 2) / (reply->height / 2);
+
+          double angle = (180 / M_PI) * (M_PI - std::atan2(norm_x, norm_y));
+
+          // 360 / 8 = 45; 45 / 2 = 22.5
+                 if (angle >  22.5 && angle <=  67.5) {
+            warp_pointer(m_old_width, 0);
+            m_origin_x = reply->x + m_old_width;
+            m_origin_y = reply->y;
+            m_resize_direction = TOPRIGHT;
+
+          } else if (angle >  67.5 && angle <= 112.5) {
+            warp_pointer(m_old_width, m_old_height / 2);
+            m_origin_x = reply->x + m_old_width;
+            m_origin_y = reply->y + m_old_height / 2;
+            m_resize_direction = RIGHT;
+
+          } else if (angle > 112.5 && angle <= 157.5) {
+            warp_pointer(m_old_width, m_old_height);
+            m_origin_x = reply->x + m_old_width;
+            m_origin_y = reply->y + m_old_height;
+            m_resize_direction = BOTTOMRIGHT;
+
+          } else if (angle > 157.5 && angle <= 202.5) {
+            warp_pointer(m_old_width / 2, m_old_height);
+            m_origin_x = reply->x + m_old_width / 2;
+            m_origin_y = reply->y + m_old_height;
+            m_resize_direction = BOTTOM;
+
+          } else if (angle > 202.5 && angle <= 247.5) {
+            warp_pointer(0, m_old_height);
+            m_origin_x = reply->x;
+            m_origin_y = reply->y + m_old_height;
+            m_resize_direction = BOTTOMLEFT;
+
+          } else if (angle > 247.5 && angle <= 292.5) {
+            warp_pointer(0, m_old_height / 2);
+            m_origin_x = reply->x;
+            m_origin_y = reply->y + m_old_height / 2;
+            m_resize_direction = LEFT;
+
+          } else if (angle > 292.5 && angle <= 337.5) {
+            warp_pointer(0, 0);
+            m_origin_x = reply->x;
+            m_origin_y = reply->y;
+            m_resize_direction = TOPLEFT;
+
+          } else {
+            warp_pointer(m_old_width / 2, 0);
+            m_origin_x = reply->x + m_old_width / 2;
+            m_origin_y = reply->y;
+            m_resize_direction = TOP;
+
+          }
+
+                 begin_motion(true);
         }
 
       } else { // XCB_BUTTON_RELEASE
@@ -216,9 +276,72 @@ class client : public x::window
                     static_cast<uint32_t>(e->root_y - m_pointer_position_y) });
 
       } else if (m_resize) {
-        configure(XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT,
-                  { static_cast<uint32_t>(e->event_x),
-                    static_cast<uint32_t>(e->event_y) });
+        uint32_t mask = 0;
+        std::vector<uint32_t> values;
+
+        switch (m_resize_direction) {
+          case TOP:
+            mask = XCB_CONFIG_WINDOW_Y
+                 | XCB_CONFIG_WINDOW_HEIGHT;
+            values.push_back(m_old_y + e->root_y - m_origin_y);
+            values.push_back(m_old_height + m_origin_y - e->root_y);
+            break;
+
+          case TOPRIGHT:
+            mask = XCB_CONFIG_WINDOW_Y
+                 | XCB_CONFIG_WINDOW_WIDTH
+                 | XCB_CONFIG_WINDOW_HEIGHT;
+            values.push_back(m_old_y + e->root_y - m_origin_y);
+            values.push_back(m_old_width + e->root_x - m_origin_x);
+            values.push_back(m_old_height + m_origin_y - e->root_y);
+            break;
+
+          case RIGHT:
+            mask = XCB_CONFIG_WINDOW_WIDTH;
+            values.push_back(m_old_width + e->root_x - m_origin_x);
+            break;
+
+          case BOTTOMRIGHT:
+            mask = XCB_CONFIG_WINDOW_WIDTH
+                 | XCB_CONFIG_WINDOW_HEIGHT;
+            values.push_back(m_old_width + e->root_x - m_origin_x);
+            values.push_back(m_old_height + e->root_y - m_origin_y);
+            break;
+
+          case BOTTOM:
+            mask = XCB_CONFIG_WINDOW_HEIGHT;
+            values.push_back(m_old_height + e->root_y - m_origin_y);
+            break;
+
+          case BOTTOMLEFT:
+            mask = XCB_CONFIG_WINDOW_X
+                 | XCB_CONFIG_WINDOW_WIDTH
+                 | XCB_CONFIG_WINDOW_HEIGHT;
+            values.push_back(m_old_x + e->root_x - m_origin_x);
+            values.push_back(m_old_width + m_origin_x - e->root_x);
+            values.push_back(m_old_height + e->root_y - m_origin_y);
+            break;
+
+          case LEFT:
+            mask = XCB_CONFIG_WINDOW_X
+                 | XCB_CONFIG_WINDOW_WIDTH;
+            values.push_back(m_old_x + e->root_x - m_origin_x);
+            values.push_back(m_old_width + m_origin_x - e->root_x);
+            break;
+
+          case TOPLEFT:
+            mask = XCB_CONFIG_WINDOW_X
+                 | XCB_CONFIG_WINDOW_Y
+                 | XCB_CONFIG_WINDOW_WIDTH
+                 | XCB_CONFIG_WINDOW_HEIGHT;
+            values.push_back(m_old_x + e->root_x - m_origin_x);
+            values.push_back(m_old_y + e->root_y - m_origin_y);
+            values.push_back(m_old_width + m_origin_x - e->root_x);
+            values.push_back(m_old_height + m_origin_y - e->root_y);
+            break;
+        }
+
+        configure(mask, values);
       }
     }
 
@@ -248,6 +371,9 @@ class client : public x::window
     }
 
   private:
+    enum direction { LEFT, RIGHT, TOP, BOTTOM,
+                     TOPLEFT, TOPRIGHT, BOTTOMLEFT, BOTTOMRIGHT };
+
     event::source & m_s;
 
     xcb_cursor_t m_move_cursor;
@@ -262,20 +388,42 @@ class client : public x::window
 
     bool m_move = false;
     bool m_resize = false;
+    unsigned int m_old_x = 0;
+    unsigned int m_old_y = 0;
+    unsigned int m_origin_x = 0;
+    unsigned int m_origin_y = 0;
     unsigned int m_old_width = 0;
     unsigned int m_old_height = 0;
     unsigned int m_pointer_position_x = 0;
     unsigned int m_pointer_position_y = 0;
 
+    direction m_resize_direction;
+
     void
-    begin_motion(xcb_cursor_t cursor)
+    begin_motion(bool resize = false)
     {
-      m_s.insert({ { 0, XCB_MOTION_NOTIFY } }, this);
+      xcb_cursor_t cursor = m_move_cursor;
+
+      if (resize) {
+      switch (m_resize_direction) {
+        case TOP:         cursor = m_resize_cursor_top;         break;
+        case TOPRIGHT:    cursor = m_resize_cursor_topright;    break;
+        case RIGHT:       cursor = m_resize_cursor_right;       break;
+        case BOTTOMRIGHT: cursor = m_resize_cursor_bottomright; break;
+        case BOTTOM:      cursor = m_resize_cursor_bottom;      break;
+        case BOTTOMLEFT:  cursor = m_resize_cursor_bottomleft;  break;
+        case LEFT:        cursor = m_resize_cursor_left;        break;
+        case TOPLEFT:     cursor = m_resize_cursor_topleft;     break;
+      }
+      }
+
       *(m_c.grab_pointer(false, m_window,
                          XCB_EVENT_MASK_BUTTON_MOTION
                          | XCB_EVENT_MASK_BUTTON_RELEASE,
                          XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
                          XCB_NONE, cursor, XCB_TIME_CURRENT_TIME));
+
+      m_s.insert({ { 0, XCB_MOTION_NOTIFY } }, this);
     }
 
     void
