@@ -64,9 +64,37 @@ class client : public x::window
         m_c.create_glyph_cursor(m_move_cursor, font, font, 52, 52 + 1,
                                 0, 0, 0, 0xffff, 0xffff, 0xffff);
 
-        m_resize_cursor = m_c.generate_id();
-        m_c.create_glyph_cursor(m_resize_cursor, font, font, 14, 14 + 1,
-                                0, 0, 0, 0xffff, 0xffff, 0xffff);
+        m_resize_cursor_top = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor_top, font, font,
+                                138, 138 + 1, 0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_resize_cursor_bottom = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor_bottom, font, font,
+                                16, 16 + 1, 0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_resize_cursor_left = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor_left, font, font,
+                                70, 70 + 1, 0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_resize_cursor_right = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor_right, font, font,
+                                96, 96 + 1, 0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_resize_cursor_topleft = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor_topleft, font, font,
+                                134, 134 + 1, 0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_resize_cursor_topright = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor_topright, font, font,
+                                136, 136 + 1, 0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_resize_cursor_bottomleft = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor_bottomleft, font, font,
+                                12, 12 + 1, 0, 0, 0, 0xffff, 0xffff, 0xffff);
+
+        m_resize_cursor_bottomright = m_c.generate_id();
+        m_c.create_glyph_cursor(m_resize_cursor_bottomright, font, font,
+                                14, 14 + 1, 0, 0, 0, 0xffff, 0xffff, 0xffff);
 
         m_c.close_font(font);
       }
@@ -80,7 +108,14 @@ class client : public x::window
       ungrab_button(XCB_BUTTON_INDEX_ANY, XCB_MOD_MASK_ANY);
 
       m_c.free_cursor(m_move_cursor);
-      m_c.free_cursor(m_resize_cursor);
+      m_c.free_cursor(m_resize_cursor_top);
+      m_c.free_cursor(m_resize_cursor_bottom);
+      m_c.free_cursor(m_resize_cursor_left);
+      m_c.free_cursor(m_resize_cursor_right);
+      m_c.free_cursor(m_resize_cursor_topleft);
+      m_c.free_cursor(m_resize_cursor_topright);
+      m_c.free_cursor(m_resize_cursor_bottomleft);
+      m_c.free_cursor(m_resize_cursor_bottomright);
     }
 
     priority_masks
@@ -216,7 +251,14 @@ class client : public x::window
     event::source & m_s;
 
     xcb_cursor_t m_move_cursor;
-    xcb_cursor_t m_resize_cursor;
+    xcb_cursor_t m_resize_cursor_top;
+    xcb_cursor_t m_resize_cursor_bottom;
+    xcb_cursor_t m_resize_cursor_left;
+    xcb_cursor_t m_resize_cursor_right;
+    xcb_cursor_t m_resize_cursor_topleft;
+    xcb_cursor_t m_resize_cursor_topright;
+    xcb_cursor_t m_resize_cursor_bottomleft;
+    xcb_cursor_t m_resize_cursor_bottomright;
 
     bool m_move = false;
     bool m_resize = false;
