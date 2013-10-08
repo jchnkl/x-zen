@@ -25,6 +25,108 @@ class manager
 
     friend std::ostream & operator<<(std::ostream &, const manager &);
 
+    template<typename T>
+    class iterator
+      : public std::iterator<std::random_access_iterator_tag, T>
+    {
+      public:
+        template<typename U>
+        friend bool operator==(const iterator<U> &, const iterator<U> &);
+
+        template<typename U>
+        friend bool operator!=(const iterator<U> &, const iterator<U> &);
+
+        template<typename U>
+        friend bool operator<(const iterator<U> &, const iterator<U> &);
+
+        template<typename U>
+        friend bool operator>(const iterator<U> &, const iterator<U> &);
+
+        template<typename U>
+        friend bool operator<=(const iterator<U> &, const iterator<U> &);
+
+        template<typename U>
+        friend bool operator>=(const iterator<U> &, const iterator<U> &);
+
+        iterator(window_client_map & clients, window_deque::iterator iterator)
+          : m_clients(clients), m_iterator(iterator)
+        {}
+
+        iterator(const iterator & other)
+          : m_clients(other.m_clients), m_iterator(other.m_iterator)
+        {}
+
+        iterator & operator=(const iterator & rhs)
+        {
+          m_iterator = rhs.m_iterator;
+          return *this;
+        }
+
+        iterator & operator++(void) // prefix
+        {
+          ++m_iterator;
+          return *this;
+        }
+
+        iterator & operator--(void) // prefix
+        {
+          --m_iterator;
+          return *this;
+        }
+
+        iterator operator++(int) // postfix
+        {
+          iterator copy = *this;
+          ++(*this);
+          return copy;
+        }
+
+        iterator operator--(int) // postfix
+        {
+          iterator copy = *this;
+          --(*this);
+          return copy;
+        }
+
+        iterator operator+(const window_deque::difference_type & n)
+        {
+          iterator copy(*this);
+          return copy += n;
+        }
+
+        iterator & operator+=(const window_deque::difference_type & n)
+        {
+          m_iterator += n;
+          return *this;
+        }
+
+        iterator operator-(const window_deque::difference_type & n)
+        {
+          iterator copy(*this);
+          return copy -= n;
+        }
+
+        iterator & operator-=(const window_deque::difference_type & n)
+        {
+          m_iterator -= n;
+          return *this;
+        }
+
+        T & operator*(void) const
+        {
+          return *m_clients[*m_iterator];
+        }
+
+        T & operator->(void) const
+        {
+          return *m_clients[*m_iterator];
+        }
+
+      protected:
+        window_client_map & m_clients;
+        window_deque::iterator m_iterator;
+    };
+
     manager(connection & c, event::source & s)
       : m_c(c), m_s(s)
     {
@@ -34,6 +136,18 @@ class manager
     ~manager(void)
     {
       m_s.remove(this);
+    }
+
+    iterator<client>
+    begin(void)
+    {
+      return iterator<client>(m_clients, m_client_order.begin());
+    }
+
+    iterator<client>
+    end(void)
+    {
+      return iterator<client>(m_clients, m_client_order.end());
     }
 
     priority_masks
@@ -97,6 +211,50 @@ std::ostream & operator<<(std::ostream & os, const manager & cm)
 
   return os;
 }
+
+template<typename T>
+bool
+operator==(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
+{
+  return lhs.m_iterator == rhs.m_iterator;
+}
+
+template<typename T>
+bool
+operator!=(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
+{
+  return ! (lhs == rhs);
+}
+
+template<typename T>
+bool
+operator<(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
+{
+  return lhs.m_iterator < rhs.m_iterator;
+}
+
+template<typename T>
+bool
+operator>(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
+{
+  return lhs.m_iterator > rhs.m_iterator;
+}
+
+template<typename T>
+bool
+operator<=(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
+{
+  return lhs.m_iterator <= rhs.m_iterator;
+}
+
+template<typename T>
+bool
+operator>=(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
+{
+  return lhs.m_iterator >= rhs.m_iterator;
+}
+
+}; // namespace client
 
 }; // namespace zen
 
