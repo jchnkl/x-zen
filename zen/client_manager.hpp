@@ -20,6 +20,8 @@ class manager
   , public event::sink<xcb_destroy_notify_event_t>
 {
   public:
+    typedef std::deque<xcb_window_t> window_deque;
+    typedef std::unordered_map<xcb_window_t, client_ptr> window_client_map;
 
     friend std::ostream & operator<<(std::ostream &, const manager &);
 
@@ -68,7 +70,7 @@ class manager
       m_clients.erase(window);
     }
 
-    const std::unordered_map<xcb_window_t, client_ptr> &
+    const window_client_map &
     clients(void)
     {
       return m_clients;
@@ -78,8 +80,8 @@ class manager
     connection & m_c;
     event::source & m_s;
 
-    std::deque<xcb_window_t> m_client_order;
-    std::unordered_map<xcb_window_t, client_ptr> m_clients;
+    window_deque m_client_order;
+    window_client_map m_clients;
 }; // class client_manager
 
 std::ostream & operator<<(std::ostream & os, const manager & cm)
