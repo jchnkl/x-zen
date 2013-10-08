@@ -269,4 +269,87 @@ class resize : public event::dispatcher
     unsigned int m_origin_height;
 }; // class resize
 
+class move : public event::dispatcher
+           , public event::sink<xcb_button_press_event_t>
+           , public event::sink<xcb_motion_notify_event_t>
+           {
+  public:
+    move(x::connection & c, event::source & s,
+         cursors & cursors, interface::windows & windows)
+      : m_c(c), m_s(s), m_cursors(cursors), m_windows(windows)
+    {
+      m_s.insert(this);
+    }
+
+    ~move(void)
+    {
+      m_s.remove(this);
+    }
+
+    priority_masks
+    masks(void)
+    {
+      return { { UINT_MAX, XCB_BUTTON_PRESS }
+             , { UINT_MAX, XCB_BUTTON_RELEASE }
+             };
+    }
+
+    void
+    handle(xcb_button_press_event_t * e)
+    {
+      if (XCB_BUTTON_RELEASE == (e->response_type & ~0x80)) {
+        m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
+        m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
+        m_current_window.reset();
+        return;
+
+      } else if (XCB_BUTTON_INDEX_1 == e->detail && XCB_MOD_MASK_4 == e->state) {
+        m_current_window = m_windows[e->event];
+
+      } else {
+        return;
+      }
+
+      if (! m_current_window) return;
+
+      m_pointer_position_x = e->event_x;
+      m_pointer_position_y = e->event_y;
+
+      m_s.insert({{ 0, XCB_MOTION_NOTIFY }}, this);
+
+      *(m_c.grab_pointer(false, m_current_window->id(),
+                         XCB_EVENT_MASK_BUTTON_MOTION
+                         | XCB_EVENT_MASK_BUTTON_RELEASE,
+                         XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
+                         XCB_NONE, m_cursors[XC_fleur],
+                         XCB_TIME_CURRENT_TIME));
+    }
+
+    void
+    handle(xcb_motion_notify_event_t * e)
+    {
+      if (! (m_current_window && e->event == m_current_window->id())) return;
+
+      m_current_window->configure(
+          XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y,
+          { static_cast<uint32_t>(e->root_x - m_pointer_position_x),
+            static_cast<uint32_t>(e->root_y - m_pointer_position_y) });
+    }
+
+  private:
+    connection & m_c;
+    event::source & m_s;
+    cursors & m_cursors;
+    interface::windows & m_windows;
+
+    xcb_cursor_t m_cursor;
+    window_ptr m_current_window;
+    unsigned int m_pointer_position_x;
+    unsigned int m_pointer_position_y;
+}; // class move
+
+}; // namespace pointer
+
+}; // namespace zen
+
 #endif // X_POINTER_HPP
