@@ -10,24 +10,26 @@
 
 namespace zen {
 
+namespace client {
 
 namespace event = x::interface::event;
 
-class client_manager
+class manager
   , public event::dispatcher
   , public event::sink<xcb_create_notify_event_t>
   , public event::sink<xcb_destroy_notify_event_t>
 {
   public:
-    friend std::ostream & operator<<(std::ostream &, const client_manager &);
 
-    client_manager(connection & c, interface::event::source & s)
+    friend std::ostream & operator<<(std::ostream &, const manager &);
+
+    manager(connection & c, event::source & s)
       : m_c(c), m_s(s)
     {
       s.insert(this);
     }
 
-    ~client_manager(void)
+    ~manager(void)
     {
       m_s.remove(this);
     }
@@ -80,7 +82,7 @@ class client_manager
     std::unordered_map<xcb_window_t, client_ptr> m_clients;
 }; // class client_manager
 
-std::ostream & operator<<(std::ostream & os, const client_manager & cm)
+std::ostream & operator<<(std::ostream & os, const manager & cm)
 {
   std::size_t i = 0;
   for (i = 0; i < cm.m_client_order.size(); ++i) {
