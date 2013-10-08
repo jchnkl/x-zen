@@ -1,5 +1,6 @@
 LIBS=xcb xcb-keysyms
-CXXFLAGS=$(shell pkg-config --cflags ${LIBS}) -std=c++11 -Wall -O0 -g
+CXXFLAGS=-std=c++11 -Wall -O0 -g \
+				 $(shell pkg-config --cflags ${LIBS})
 LDFLAGS=$(shell pkg-config --libs ${LIBS})
 
 CPPSRCS=main.cpp
