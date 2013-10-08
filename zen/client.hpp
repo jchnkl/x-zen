@@ -11,6 +11,8 @@
 
 namespace zen {
 
+namespace client {
+
 namespace event = x::interface::event;
 
 class client;
@@ -438,6 +440,8 @@ std::ostream & operator<<(std::ostream & os, const client & c)
 {
   return os << c.id();
 }
+
+}; // namespace client
 
 }; // namespace zen
 
