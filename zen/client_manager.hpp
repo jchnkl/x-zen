@@ -1,5 +1,5 @@
-#ifndef X_CLIENT_MANAGER_HPP
-#define X_CLIENT_MANAGER_HPP
+#ifndef ZEN_CLIENT_MANAGER_HPP
+#define ZEN_CLIENT_MANAGER_HPP
 
 #include <iostream>
 #include <algorithm>
@@ -95,4 +95,4 @@ std::ostream & operator<<(std::ostream & os, const client_manager & cm)
 
 }; // namespace zen
 
-#endif // X_CLIENT_MANAGER_HPP
+#endif // ZEN_CLIENT_MANAGER_HPP
