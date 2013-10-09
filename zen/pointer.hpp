@@ -184,72 +184,51 @@ class resize : public event::dispatcher
     {
       if (! (m_current_client && e->event == m_current_client->id())) return;
 
-      uint32_t mask = 0;
-      std::vector<uint32_t> values;
-
       switch (m_direction) {
         case TOP:
-          mask = XCB_CONFIG_WINDOW_Y
-               | XCB_CONFIG_WINDOW_HEIGHT;
-          values.push_back(m_origin_y + e->root_y - m_pointer_y);
-          values.push_back(m_origin_height + m_pointer_y - e->root_y);
+          m_current_client->y(m_origin_y + e->root_y - m_pointer_y)
+                           .height(m_origin_height + m_pointer_y - e->root_y);
           break;
 
         case TOPRIGHT:
-          mask = XCB_CONFIG_WINDOW_Y
-               | XCB_CONFIG_WINDOW_WIDTH
-               | XCB_CONFIG_WINDOW_HEIGHT;
-          values.push_back(m_origin_y + e->root_y - m_pointer_y);
-          values.push_back(m_origin_width + e->root_x - m_pointer_x);
-          values.push_back(m_origin_height + m_pointer_y - e->root_y);
+          m_current_client->y(m_origin_y + e->root_y - m_pointer_y)
+                           .width(m_origin_width + e->root_x - m_pointer_x)
+                           .height(m_origin_height + m_pointer_y - e->root_y);
           break;
 
         case RIGHT:
-          mask = XCB_CONFIG_WINDOW_WIDTH;
-          values.push_back(m_origin_width + e->root_x - m_pointer_x);
+          m_current_client->width(m_origin_width + e->root_x - m_pointer_x);
           break;
 
         case BOTTOMRIGHT:
-          mask = XCB_CONFIG_WINDOW_WIDTH
-               | XCB_CONFIG_WINDOW_HEIGHT;
-          values.push_back(m_origin_width + e->root_x - m_pointer_x);
-          values.push_back(m_origin_height + e->root_y - m_pointer_y);
+          m_current_client->width(m_origin_width + e->root_x - m_pointer_x)
+                           .height(m_origin_height + e->root_y - m_pointer_y);
           break;
 
         case BOTTOM:
-          mask = XCB_CONFIG_WINDOW_HEIGHT;
-          values.push_back(m_origin_height + e->root_y - m_pointer_y);
+          m_current_client->height(m_origin_height + e->root_y - m_pointer_y);
           break;
 
         case BOTTOMLEFT:
-          mask = XCB_CONFIG_WINDOW_X
-               | XCB_CONFIG_WINDOW_WIDTH
-               | XCB_CONFIG_WINDOW_HEIGHT;
-          values.push_back(m_origin_x + e->root_x - m_pointer_x);
-          values.push_back(m_origin_width + m_pointer_x - e->root_x);
-          values.push_back(m_origin_height + e->root_y - m_pointer_y);
+          m_current_client->x(m_origin_x + e->root_x - m_pointer_x)
+                           .width(m_origin_width + m_pointer_x - e->root_x)
+                           .height(m_origin_height + e->root_y - m_pointer_y);
           break;
 
         case LEFT:
-          mask = XCB_CONFIG_WINDOW_X
-               | XCB_CONFIG_WINDOW_WIDTH;
-          values.push_back(m_origin_x + e->root_x - m_pointer_x);
-          values.push_back(m_origin_width + m_pointer_x - e->root_x);
+          m_current_client->x(m_origin_x + e->root_x - m_pointer_x)
+                           .width(m_origin_width + m_pointer_x - e->root_x);
           break;
 
         case TOPLEFT:
-          mask = XCB_CONFIG_WINDOW_X
-               | XCB_CONFIG_WINDOW_Y
-               | XCB_CONFIG_WINDOW_WIDTH
-               | XCB_CONFIG_WINDOW_HEIGHT;
-          values.push_back(m_origin_x + e->root_x - m_pointer_x);
-          values.push_back(m_origin_y + e->root_y - m_pointer_y);
-          values.push_back(m_origin_width + m_pointer_x - e->root_x);
-          values.push_back(m_origin_height + m_pointer_y - e->root_y);
+          m_current_client->x(m_origin_x + e->root_x - m_pointer_x)
+                           .y(m_origin_y + e->root_y - m_pointer_y)
+                           .width(m_origin_width + m_pointer_x - e->root_x)
+                           .height(m_origin_height + m_pointer_y - e->root_y);
           break;
       }
 
-      m_current_client->configure(mask, values);
+      m_current_client->configure();
     }
 
   private:
