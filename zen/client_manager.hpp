@@ -127,7 +127,7 @@ class manager
         window_deque::iterator m_iterator;
     };
 
-    manager(connection & c, event::source & s)
+    manager(x::connection & c, event::source & s)
       : m_c(c), m_s(s)
     {
       s.insert(this);
@@ -191,7 +191,7 @@ class manager
     }
 
   private:
-    connection & m_c;
+    x::connection & m_c;
     event::source & m_s;
 
     window_deque m_client_order;
