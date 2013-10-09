@@ -105,6 +105,8 @@ class resize : public event::dispatcher
 
       m_origin_x = reply->x;
       m_origin_y = reply->y;
+      m_pointer_x = reply->x;
+      m_pointer_y = reply->y;
       m_origin_width = reply->width;
       m_origin_height = reply->height;
 
@@ -120,50 +122,44 @@ class resize : public event::dispatcher
       if (angle >  22.5 && angle <=  67.5) {
         cursor = m_cursors[XC_top_right_corner];
         m_direction = { TOP, RIGHT };
-        m_pointer_x = reply->x + m_origin_width;
-        m_pointer_y = reply->y;
+        m_pointer_x += m_origin_width;
 
       } else if (angle >  67.5 && angle <= 112.5) {
         cursor = m_cursors[XC_right_side];
         m_direction = { NONE, RIGHT };
-        m_pointer_x = reply->x + m_origin_width;
-        m_pointer_y = reply->y + m_origin_height / 2;
+        m_pointer_x += m_origin_width;
+        m_pointer_y += m_origin_height / 2;
 
       } else if (angle > 112.5 && angle <= 157.5) {
         cursor = m_cursors[XC_bottom_right_corner];
         m_direction = { BOTTOM, RIGHT };
-        m_pointer_x = reply->x + m_origin_width;
-        m_pointer_y = reply->y + m_origin_height;
+        m_pointer_x += m_origin_width;
+        m_pointer_y += m_origin_height;
 
       } else if (angle > 157.5 && angle <= 202.5) {
         cursor = m_cursors[XC_bottom_side];
         m_direction = { BOTTOM, NONE };
-        m_pointer_x = reply->x + m_origin_width / 2;
-        m_pointer_y = reply->y + m_origin_height;
+        m_pointer_x += m_origin_width / 2;
+        m_pointer_y += m_origin_height;
 
       } else if (angle > 202.5 && angle <= 247.5) {
         cursor = m_cursors[XC_bottom_left_corner];
         m_direction = { BOTTOM, LEFT };
-        m_pointer_x = reply->x;
-        m_pointer_y = reply->y + m_origin_height;
+        m_pointer_y += m_origin_height;
 
       } else if (angle > 247.5 && angle <= 292.5) {
         cursor = m_cursors[XC_left_side];
         m_direction = { NONE, LEFT };
-        m_pointer_x = reply->x;
-        m_pointer_y = reply->y + m_origin_height / 2;
+        m_pointer_y += reply->y + m_origin_height / 2;
 
       } else if (angle > 292.5 && angle <= 337.5) {
         cursor = m_cursors[XC_top_left_corner];
         m_direction = { TOP, LEFT };
-        m_pointer_x = reply->x;
-        m_pointer_y = reply->y;
 
       } else {
         cursor = m_cursors[XC_top_side];
         m_direction = { TOP, NONE };
-        m_pointer_x = reply->x + m_origin_width / 2;
-        m_pointer_y = reply->y;
+        m_pointer_x += reply->x + m_origin_width / 2;
 
       }
 
