@@ -86,22 +86,22 @@ class resize : public event::dispatcher
     {
       if (XCB_BUTTON_RELEASE == (e->response_type & ~0x80)) {
         m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
-        m_current_window.reset();
+        m_current_client.reset();
         return;
 
       } else if (XCB_BUTTON_INDEX_3 == e->detail && XCB_MOD_MASK_4 == e->state) {
-        m_current_window = m_windows[e->event];
+        m_current_client = m_manager[e->event];
 
       } else {
         return;
       }
 
-      if (! m_current_window) return;
+      if (! m_current_client) return;
 
       m_pointer_x = e->root_x;
       m_pointer_y = e->root_y;
 
-      auto reply = m_current_window->get_geometry();
+      auto reply = m_current_client->get_geometry();
 
       m_origin_x = reply->x;
       m_origin_y = reply->y;
@@ -167,10 +167,10 @@ class resize : public event::dispatcher
 
       }
 
-      m_current_window->warp_pointer(m_pointer_x - reply->x,
+      m_current_client->warp_pointer(m_pointer_x - reply->x,
                                      m_pointer_y - reply->y);
 
-      *(m_c.grab_pointer(false, m_current_window->id(),
+      *(m_c.grab_pointer(false, m_current_client->id(),
                          XCB_EVENT_MASK_BUTTON_MOTION
                          | XCB_EVENT_MASK_BUTTON_RELEASE,
                          XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
@@ -180,7 +180,7 @@ class resize : public event::dispatcher
     void
     handle(xcb_motion_notify_event_t * e)
     {
-      if (! m_current_window && e->event != m_current_window->id()) return;
+      if (! (m_current_client && e->event == m_current_client->id())) return;
 
       uint32_t mask = 0;
       std::vector<uint32_t> values;
@@ -247,7 +247,7 @@ class resize : public event::dispatcher
           break;
       }
 
-      m_current_window->configure(mask, values);
+      m_current_client->configure(mask, values);
     }
 
   private:
@@ -300,24 +300,24 @@ class move : public event::dispatcher
       if (XCB_BUTTON_RELEASE == (e->response_type & ~0x80)) {
         m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
         m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
-        m_current_window.reset();
+        m_current_client.reset();
         return;
 
       } else if (XCB_BUTTON_INDEX_1 == e->detail && XCB_MOD_MASK_4 == e->state) {
-        m_current_window = m_windows[e->event];
+        m_current_client = m_manager[e->event];
 
       } else {
         return;
       }
 
-      if (! m_current_window) return;
+      if (! m_current_client) return;
 
       m_pointer_position_x = e->event_x;
       m_pointer_position_y = e->event_y;
 
       m_s.insert({{ 0, XCB_MOTION_NOTIFY }}, this);
 
-      *(m_c.grab_pointer(false, m_current_window->id(),
+      *(m_c.grab_pointer(false, m_current_client->id(),
                          XCB_EVENT_MASK_BUTTON_MOTION
                          | XCB_EVENT_MASK_BUTTON_RELEASE,
                          XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
@@ -328,9 +328,9 @@ class move : public event::dispatcher
     void
     handle(xcb_motion_notify_event_t * e)
     {
-      if (! (m_current_window && e->event == m_current_window->id())) return;
+      if (! (m_current_client && e->event == m_current_client->id())) return;
 
-      m_current_window->configure(
+      m_current_client->configure(
           XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y,
           { static_cast<uint32_t>(e->root_x - m_pointer_position_x),
             static_cast<uint32_t>(e->root_y - m_pointer_position_y) });
