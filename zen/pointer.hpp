@@ -119,49 +119,49 @@ class resize : public event::dispatcher
       // 360 / 8 = 45; 45 / 2 = 22.5
       if (angle >  22.5 && angle <=  67.5) {
         cursor = m_cursors[XC_top_right_corner];
-        m_direction = TOPRIGHT;
+        m_direction = { TOP, RIGHT };
         m_pointer_x = reply->x + m_origin_width;
         m_pointer_y = reply->y;
 
       } else if (angle >  67.5 && angle <= 112.5) {
         cursor = m_cursors[XC_right_side];
-        m_direction = RIGHT;
+        m_direction = { NONE, RIGHT };
         m_pointer_x = reply->x + m_origin_width;
         m_pointer_y = reply->y + m_origin_height / 2;
 
       } else if (angle > 112.5 && angle <= 157.5) {
         cursor = m_cursors[XC_bottom_right_corner];
-        m_direction = BOTTOMRIGHT;
+        m_direction = { BOTTOM, RIGHT };
         m_pointer_x = reply->x + m_origin_width;
         m_pointer_y = reply->y + m_origin_height;
 
       } else if (angle > 157.5 && angle <= 202.5) {
         cursor = m_cursors[XC_bottom_side];
-        m_direction = BOTTOM;
+        m_direction = { BOTTOM, NONE };
         m_pointer_x = reply->x + m_origin_width / 2;
         m_pointer_y = reply->y + m_origin_height;
 
       } else if (angle > 202.5 && angle <= 247.5) {
         cursor = m_cursors[XC_bottom_left_corner];
-        m_direction = BOTTOMLEFT;
+        m_direction = { BOTTOM, LEFT };
         m_pointer_x = reply->x;
         m_pointer_y = reply->y + m_origin_height;
 
       } else if (angle > 247.5 && angle <= 292.5) {
         cursor = m_cursors[XC_left_side];
-        m_direction = LEFT;
+        m_direction = { NONE, LEFT };
         m_pointer_x = reply->x;
         m_pointer_y = reply->y + m_origin_height / 2;
 
       } else if (angle > 292.5 && angle <= 337.5) {
         cursor = m_cursors[XC_top_left_corner];
-        m_direction = TOPLEFT;
+        m_direction = { TOP, LEFT };
         m_pointer_x = reply->x;
         m_pointer_y = reply->y;
 
       } else {
         cursor = m_cursors[XC_top_side];
-        m_direction = TOP;
+        m_direction = { TOP, NONE };
         m_pointer_x = reply->x + m_origin_width / 2;
         m_pointer_y = reply->y;
 
@@ -184,35 +184,24 @@ class resize : public event::dispatcher
     {
       if (! (m_current_client && e->event == m_current_client->id())) return;
 
-      switch (m_direction) {
+      switch (m_direction.first) {
         case TOP:
           m_current_client->y(m_origin_y + e->root_y - m_pointer_y)
                            .height(m_origin_height + m_pointer_y - e->root_y);
-          break;
-
-        case TOPRIGHT:
-          m_current_client->y(m_origin_y + e->root_y - m_pointer_y)
-                           .width(m_origin_width + e->root_x - m_pointer_x)
-                           .height(m_origin_height + m_pointer_y - e->root_y);
-          break;
-
-        case RIGHT:
-          m_current_client->width(m_origin_width + e->root_x - m_pointer_x);
-          break;
-
-        case BOTTOMRIGHT:
-          m_current_client->width(m_origin_width + e->root_x - m_pointer_x)
-                           .height(m_origin_height + e->root_y - m_pointer_y);
           break;
 
         case BOTTOM:
           m_current_client->height(m_origin_height + e->root_y - m_pointer_y);
           break;
 
-        case BOTTOMLEFT:
-          m_current_client->x(m_origin_x + e->root_x - m_pointer_x)
-                           .width(m_origin_width + m_pointer_x - e->root_x)
-                           .height(m_origin_height + e->root_y - m_pointer_y);
+        case NONE:
+        default:
+          break;
+      };
+
+      switch (m_direction.second) {
+        case RIGHT:
+          m_current_client->width(m_origin_width + e->root_x - m_pointer_x);
           break;
 
         case LEFT:
@@ -220,20 +209,16 @@ class resize : public event::dispatcher
                            .width(m_origin_width + m_pointer_x - e->root_x);
           break;
 
-        case TOPLEFT:
-          m_current_client->x(m_origin_x + e->root_x - m_pointer_x)
-                           .y(m_origin_y + e->root_y - m_pointer_y)
-                           .width(m_origin_width + m_pointer_x - e->root_x)
-                           .height(m_origin_height + m_pointer_y - e->root_y);
+        case NONE:
+        default:
           break;
-      }
+      };
 
       m_current_client->configure();
     }
 
   private:
-    enum direction { LEFT, RIGHT, TOP, BOTTOM,
-                     TOPLEFT, TOPRIGHT, BOTTOMLEFT, BOTTOMRIGHT };
+    enum direction { NONE, LEFT, RIGHT, TOP, BOTTOM };
 
     x::connection & m_c;
     event::source & m_s;
@@ -241,7 +226,7 @@ class resize : public event::dispatcher
     interface::manager & m_manager;
 
     interface::client_ptr m_current_client;
-    direction m_direction;
+    std::pair<direction, direction> m_direction;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
     unsigned int m_origin_x;
