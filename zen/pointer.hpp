@@ -298,12 +298,11 @@ class move : public event::dispatcher
 
       m_s.insert({{ 0, XCB_MOTION_NOTIFY }}, this);
 
-      *(m_c.grab_pointer(false, m_current_client->id(),
-                         XCB_EVENT_MASK_BUTTON_MOTION
-                         | XCB_EVENT_MASK_BUTTON_RELEASE,
-                         XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
-                         XCB_NONE, m_cursors[XC_fleur],
-                         XCB_TIME_CURRENT_TIME));
+      *(m_current_client->grab_pointer(
+            false,
+            XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE,
+            XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE,
+            m_cursors[XC_fleur]));
     }
 
     void
