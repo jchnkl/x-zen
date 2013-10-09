@@ -21,6 +21,9 @@ int main(int argc, char ** argv)
     cm.insert(window);
   }
 
+  zen::pointer::move move(c, source, cursors, cm);
+  zen::pointer::resize resize(c, source, cursors, cm);
+
   source.run();
 
   return 0;
