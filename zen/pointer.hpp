@@ -61,8 +61,8 @@ class resize : public event::dispatcher
              {
   public:
     resize(x::connection & c, event::source & s,
-           cursors & cursors, interface::windows & windows)
-      : m_c(c), m_s(s), m_cursors(cursors), m_windows(windows)
+           cursors & cursors, interface::manager & manager)
+      : m_c(c), m_s(s), m_cursors(cursors), m_manager(manager)
     {
       m_s.insert(this);
     }
@@ -257,9 +257,9 @@ class resize : public event::dispatcher
     x::connection & m_c;
     event::source & m_s;
     cursors & m_cursors;
-    interface::windows & m_windows;
+    interface::manager & m_manager;
 
-    window_ptr m_current_window;
+    interface::client_ptr m_current_client;
     direction m_direction;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
@@ -275,8 +275,8 @@ class move : public event::dispatcher
            {
   public:
     move(x::connection & c, event::source & s,
-         cursors & cursors, interface::windows & windows)
-      : m_c(c), m_s(s), m_cursors(cursors), m_windows(windows)
+         cursors & cursors, interface::manager & manager)
+      : m_c(c), m_s(s), m_cursors(cursors), m_manager(manager)
     {
       m_s.insert(this);
     }
@@ -340,10 +340,10 @@ class move : public event::dispatcher
     x::connection & m_c;
     event::source & m_s;
     cursors & m_cursors;
-    interface::windows & m_windows;
+    interface::manager & m_manager;
 
     xcb_cursor_t m_cursor;
-    window_ptr m_current_window;
+    interface::client_ptr m_current_client;
     unsigned int m_pointer_position_x;
     unsigned int m_pointer_position_y;
 }; // class move
