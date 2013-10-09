@@ -6,7 +6,8 @@
 #include <deque>
 #include <unordered_map>
 
-#include "client.hpp"
+#include "../x/interface.hpp"
+#include "../zen/client.hpp"
 
 namespace zen {
 
