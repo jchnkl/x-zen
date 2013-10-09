@@ -11,15 +11,15 @@ int main(int argc, char ** argv)
                       | XCB_EVENT_MASK_SUBSTRUCTURE_NOTIFY
                       });
 
-  x::event::source s(c);
+  x::event::source source(c);
 
-  zen::client_manager cm(c, s);
+  zen::client::manager cm(c, source);
 
   for (auto & window : c.query_tree(c.root())) {
     cm.insert(window);
   }
 
-  s.run();
+  source.run();
 
   return 0;
 }
