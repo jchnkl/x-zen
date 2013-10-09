@@ -8,6 +8,7 @@
 
 #include "../x/window.hpp"
 #include "../x/interface.hpp"
+#include "../zen/interface.hpp"
 
 namespace zen {
 
@@ -17,9 +18,8 @@ namespace event = x::interface::event;
 
 class client;
 
-typedef std::shared_ptr<client> client_ptr;
 
-class client : public x::window
+class client : public interface::client
              , public event::dispatcher
              , public event::sink<xcb_enter_notify_event_t>
              , public event::sink<xcb_focus_in_event_t>
@@ -30,7 +30,7 @@ class client : public x::window
     friend std::ostream & operator<<(std::ostream &, const client &);
 
     client(x::connection & c, event::source & s, xcb_window_t w)
-      : x::window(c, w), m_s(s)
+      : interface::client(c, w), m_s(s)
     {
       s.insert(this);
       auto reply = get_attributes();
@@ -44,7 +44,7 @@ class client : public x::window
                           | XCB_EVENT_MASK_FOCUS_CHANGE
                           });
 
-        configure(XCB_CONFIG_WINDOW_BORDER_WIDTH, { 1 });
+        window::configure(XCB_CONFIG_WINDOW_BORDER_WIDTH, { 1 });
 
         grab_button(false,
                     XCB_EVENT_MASK_BUTTON_PRESS,
@@ -61,7 +61,6 @@ class client : public x::window
     ~client(void)
     {
       m_s.remove(this);
-
     }
 
     priority_masks
@@ -79,7 +78,7 @@ class client : public x::window
     void
     handle(xcb_map_request_event_t * e)
     {
-      if (e->window != m_window) return;
+      if (e->window != x::window::m_window) return;
       map();
     }
 
@@ -98,7 +97,7 @@ class client : public x::window
       if (e->value_mask & XCB_CONFIG_WINDOW_SIBLING)      values.push_back(e->sibling);
       if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE)   values.push_back(e->stack_mode);
 
-      configure(e->value_mask, values);
+      window::configure(e->value_mask, values);
     }
 
     void
@@ -126,8 +125,94 @@ class client : public x::window
       }
     }
 
+    virtual int x(void)                       { return m_x; }
+    virtual int y(void)                       { return m_y; }
+    virtual unsigned int width(void)          { return m_width; }
+    virtual unsigned int height(void)         { return m_height; }
+    virtual unsigned int border_width(void)   { return m_border_width; }
+    virtual xcb_window_t sibling(void)        { return m_sibling; }
+    virtual xcb_stack_mode_t stack_mode(void) { return m_stack_mode; }
+
+    virtual client & x(int x)
+    {
+      m_mask |= XCB_CONFIG_WINDOW_X;
+      m_x = x;
+      return *this;
+    }
+
+    virtual client & y(int y)
+    {
+      m_mask |= XCB_CONFIG_WINDOW_Y;
+      m_y = y;
+      return *this;
+    }
+
+    virtual client & width(unsigned int width)
+    {
+      m_mask |= XCB_CONFIG_WINDOW_WIDTH;
+      m_width = width;
+      return *this;
+    }
+
+    virtual client & height(unsigned int height)
+    {
+      m_mask |= XCB_CONFIG_WINDOW_HEIGHT;
+      m_height = height;
+      return *this;
+    }
+
+    virtual client & border_width(unsigned int border_width)
+    {
+      m_mask |= XCB_CONFIG_WINDOW_BORDER_WIDTH;
+      m_border_width = border_width;
+      return *this;
+    }
+
+    virtual client & sibling(xcb_window_t sibling)
+    {
+      m_mask |= XCB_CONFIG_WINDOW_SIBLING;
+      m_sibling = sibling;
+      return *this;
+    }
+
+    virtual client & stack_mode(xcb_stack_mode_t stack_mode)
+    {
+      m_mask |= XCB_CONFIG_WINDOW_STACK_MODE;
+      m_stack_mode = stack_mode;
+      return *this;
+    }
+
+    virtual client & configure(void)
+    {
+      std::vector<uint32_t> values;
+
+      if (XCB_CONFIG_WINDOW_X            & m_mask) { values.push_back(m_x); }
+      if (XCB_CONFIG_WINDOW_Y            & m_mask) { values.push_back(m_y); }
+      if (XCB_CONFIG_WINDOW_WIDTH        & m_mask) { values.push_back(m_width); }
+      if (XCB_CONFIG_WINDOW_HEIGHT       & m_mask) { values.push_back(m_height); }
+      if (XCB_CONFIG_WINDOW_BORDER_WIDTH & m_mask) { values.push_back(m_border_width); }
+      if (XCB_CONFIG_WINDOW_SIBLING      & m_mask) { values.push_back(m_sibling); }
+      if (XCB_CONFIG_WINDOW_STACK_MODE   & m_mask) { values.push_back(m_stack_mode); }
+
+      window::configure(m_mask, values);
+
+      m_mask = 0;
+
+      return *this;
+    }
+
   private:
     event::source & m_s;
+
+    unsigned int m_mask = 0;
+
+    int m_x = 0;
+    int m_y = 0;
+    unsigned int m_width = 0;
+    unsigned int m_height = 0;
+    unsigned int m_border_width = 0;
+    xcb_window_t m_sibling = 0;
+    xcb_stack_mode_t m_stack_mode;
 }; // class client
 
 std::ostream & operator<<(std::ostream & os, const client & c)
