@@ -310,10 +310,9 @@ class move : public event::dispatcher
     {
       if (! (m_current_client && e->event == m_current_client->id())) return;
 
-      m_current_client->configure(
-          XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y,
-          { static_cast<uint32_t>(e->root_x - m_pointer_position_x),
-            static_cast<uint32_t>(e->root_y - m_pointer_position_y) });
+      m_current_client->x(e->root_x - m_pointer_position_x)
+                       .y(e->root_y - m_pointer_position_y)
+                       .configure();
     }
 
   private:
