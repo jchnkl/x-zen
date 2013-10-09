@@ -77,7 +77,6 @@ class resize : public event::dispatcher
     {
       return { { UINT_MAX, XCB_BUTTON_PRESS }
              , { UINT_MAX, XCB_BUTTON_RELEASE }
-             , { UINT_MAX, XCB_MOTION_NOTIFY }
              };
     }
 
@@ -86,6 +85,7 @@ class resize : public event::dispatcher
     {
       if (XCB_BUTTON_RELEASE == (e->response_type & ~0x80)) {
         m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
+        m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
         m_current_client.reset();
         return;
 
@@ -169,6 +169,8 @@ class resize : public event::dispatcher
 
       m_current_client->warp_pointer(m_pointer_x - reply->x,
                                      m_pointer_y - reply->y);
+
+      m_s.insert({{ 0, XCB_MOTION_NOTIFY }}, this);
 
       *(m_c.grab_pointer(false, m_current_client->id(),
                          XCB_EVENT_MASK_BUTTON_MOTION
