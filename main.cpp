@@ -13,6 +13,8 @@ int main(int argc, char ** argv)
 
   x::event::source source(c);
 
+  zen::pointer::cursors cursors(c);
+
   zen::client::manager cm(c, source);
 
   for (auto & window : c.query_tree(c.root())) {
