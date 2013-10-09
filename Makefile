@@ -12,6 +12,7 @@ HPPSRCS=x/event.hpp \
 				x/connection.hpp \
 				x/drawable.hpp \
 				x/window.hpp \
+				zen/interface.hpp \
 				zen/pointer.hpp \
 				zen/client.hpp \
 				zen/client_manager.hpp
