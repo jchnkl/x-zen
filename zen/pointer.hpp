@@ -21,7 +21,7 @@ namespace event = x::interface::event;
 
 class cursors {
   public:
-    cursors(connection & c) : m_c(c)
+    cursors(x::connection & c) : m_c(c)
     {
       m_font = m_c.generate_id();
       m_c.open_font(m_font, "cursor");
@@ -50,7 +50,7 @@ class cursors {
     }
 
   private:
-    connection & m_c;
+    x::connection & m_c;
     xcb_font_t m_font;
     std::unordered_map<uint16_t, xcb_cursor_t> m_cursors;
 }; // class cursors
@@ -254,7 +254,7 @@ class resize : public event::dispatcher
     enum direction { LEFT, RIGHT, TOP, BOTTOM,
                      TOPLEFT, TOPRIGHT, BOTTOMLEFT, BOTTOMRIGHT };
 
-    connection & m_c;
+    x::connection & m_c;
     event::source & m_s;
     cursors & m_cursors;
     interface::windows & m_windows;
@@ -337,7 +337,7 @@ class move : public event::dispatcher
     }
 
   private:
-    connection & m_c;
+    x::connection & m_c;
     event::source & m_s;
     cursors & m_cursors;
     interface::windows & m_windows;
