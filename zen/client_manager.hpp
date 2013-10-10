@@ -8,6 +8,7 @@
 
 #include "../x/interface.hpp"
 #include "../zen/client.hpp"
+#include "../zen/client_wm_size_hints.hpp"
 
 namespace zen {
 
@@ -174,7 +175,10 @@ class manager
     insert(xcb_window_t window)
     {
       m_client_order.push_front(window);
-      m_clients[window] = client_ptr(new client(m_c, m_s, window));
+      m_clients[window] = client_ptr(
+          client_ptr(new wm_size_hints(
+                  client_ptr(new client(m_c, m_s, window)
+                    ))));
     }
 
     void
