@@ -45,6 +45,12 @@ class client : public interface::client
 
         window::configure(XCB_CONFIG_WINDOW_BORDER_WIDTH, { 1 });
 
+        auto reply = get_geometry();
+        m_x = reply->x;
+        m_y = reply->y;
+        m_width = reply->width;
+        m_height = reply->height;
+
         grab_button(false,
                     XCB_EVENT_MASK_BUTTON_PRESS,
                     XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE, XCB_NONE,
