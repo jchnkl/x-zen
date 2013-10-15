@@ -103,7 +103,8 @@ class client : public x::window {
 
   protected:
     client_ptr m_client;
-};
+
+}; // class client
 
 class manager {
   public:
