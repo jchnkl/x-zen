@@ -17,6 +17,7 @@ namespace client {
 namespace event = x::interface::event;
 
 class manager
+  : public interface::manager
   , public event::dispatcher
   , public event::sink<xcb_create_notify_event_t>
   , public event::sink<xcb_destroy_notify_event_t>
@@ -27,107 +28,133 @@ class manager
 
     friend std::ostream & operator<<(std::ostream &, const manager &);
 
-    template<typename T>
-    class iterator
-      : public std::iterator<std::random_access_iterator_tag, T>
-    {
+    class iterator : public interface::manager::iterator {
       public:
-        template<typename U>
-        friend bool operator==(const iterator<U> &, const iterator<U> &);
-
-        template<typename U>
-        friend bool operator!=(const iterator<U> &, const iterator<U> &);
-
-        template<typename U>
-        friend bool operator<(const iterator<U> &, const iterator<U> &);
-
-        template<typename U>
-        friend bool operator>(const iterator<U> &, const iterator<U> &);
-
-        template<typename U>
-        friend bool operator<=(const iterator<U> &, const iterator<U> &);
-
-        template<typename U>
-        friend bool operator>=(const iterator<U> &, const iterator<U> &);
-
-        iterator(window_client_map & clients, window_deque::iterator iterator)
-          : m_clients(clients), m_iterator(iterator)
+        iterator(const window_client_map & clients,
+                 const window_deque::iterator & iterator)
+          : m_iterator(iterator), m_clients(clients)
         {}
 
-        iterator(const iterator & other)
-          : m_clients(other.m_clients), m_iterator(other.m_iterator)
-        {}
-
-        iterator & operator=(const iterator & rhs)
+        std::shared_ptr<interface::manager::iterator> clone(void)
         {
-          m_iterator = rhs.m_iterator;
-          return *this;
+          return std::shared_ptr<interface::manager::iterator>(
+              new iterator(*this));
         }
 
-        iterator & operator++(void) // prefix
+        bool operator==(const interface::manager::iterator & other)
         {
-          ++m_iterator;
-          return *this;
+          return typeid(*this) == typeid(other)
+            && equal(dynamic_cast<const iterator &>(other));
         }
 
-        iterator & operator--(void) // prefix
+        bool operator!=(const interface::manager::iterator & other)
         {
-          --m_iterator;
-          return *this;
+          return ! this->operator==(other);
         }
 
-        iterator operator++(int) // postfix
+        bool equal(const iterator & other)
         {
-          iterator copy = *this;
-          ++(*this);
-          return copy;
+          return m_iterator == other.m_iterator;
         }
 
-        iterator operator--(int) // postfix
+        bool operator<(const interface::manager::iterator & other)
         {
-          iterator copy = *this;
-          --(*this);
-          return copy;
+          return typeid(*this) == typeid(other)
+            && (dynamic_cast<const iterator &>(*this).m_iterator
+                <
+                dynamic_cast<const iterator &>(other).m_iterator);
         }
 
-        iterator operator+(const window_deque::difference_type & n)
+        bool operator>(const interface::manager::iterator & other)
         {
-          iterator copy(*this);
-          return copy += n;
+          return typeid(*this) == typeid(other)
+            && (dynamic_cast<const iterator &>(*this).m_iterator
+                >
+                dynamic_cast<const iterator &>(other).m_iterator);
         }
 
-        iterator & operator+=(const window_deque::difference_type & n)
+        bool operator<=(const interface::manager::iterator & other)
+        {
+          return typeid(*this) == typeid(other)
+            && (dynamic_cast<const iterator &>(*this).m_iterator
+                <=
+                dynamic_cast<const iterator &>(other).m_iterator);
+        }
+
+        bool operator>=(const interface::manager::iterator & other)
+        {
+          return typeid(*this) == typeid(other)
+            && (dynamic_cast<const iterator &>(*this).m_iterator
+                >=
+                dynamic_cast<const iterator &>(other).m_iterator);
+        }
+
+        interface::manager::iterator & operator+=(const difference_type & n)
         {
           m_iterator += n;
           return *this;
         }
 
-        iterator operator-(const window_deque::difference_type & n)
-        {
-          iterator copy(*this);
-          return copy -= n;
-        }
-
-        iterator & operator-=(const window_deque::difference_type & n)
+        interface::manager::iterator & operator-=(const difference_type & n)
         {
           m_iterator -= n;
           return *this;
         }
 
-        T & operator*(void) const
+        difference_type operator-(const interface::manager::iterator & other)
         {
-          return *m_clients[*m_iterator];
+          if (typeid(*this) == typeid(other)) {
+            return m_iterator - dynamic_cast<const iterator &>(other).m_iterator;
+          } else {
+            return 0;
+          }
         }
 
-        T & operator->(void) const
+        const client_ptr & operator[](const difference_type & n)
         {
-          return *m_clients[*m_iterator];
+          return m_clients.at(m_iterator[n]);
         }
 
-      protected:
-        window_client_map & m_clients;
+        iterator & operator++(void)
+        {
+          ++m_iterator;
+          return *this;
+        }
+
+        iterator & operator--(void)
+        {
+          --m_iterator;
+          return *this;
+        }
+
+        const client_ptr & operator*(void)
+        {
+          return m_clients.at(*m_iterator);
+        }
+
+        interface::client & operator->(void)
+        {
+          return *m_clients.at(*m_iterator);
+        }
+
+      private:
         window_deque::iterator m_iterator;
+        const window_client_map & m_clients;
     };
+
+    client_ptr_iterator begin(void)
+    {
+      return client_ptr_iterator(
+          std::shared_ptr<interface::manager::iterator>(
+            new iterator(m_clients, m_client_order.begin())));
+    }
+
+    client_ptr_iterator end(void)
+    {
+      return client_ptr_iterator(
+          std::shared_ptr<interface::manager::iterator>(
+            new iterator(m_clients, m_client_order.end())));
+    }
 
     manager(x::connection & c, event::source & s)
       : m_c(c), m_s(s)
@@ -138,18 +165,6 @@ class manager
     ~manager(void)
     {
       m_s.remove(this);
-    }
-
-    iterator<client>
-    begin(void)
-    {
-      return iterator<client>(m_clients, m_client_order.begin());
-    }
-
-    iterator<client>
-    end(void)
-    {
-      return iterator<client>(m_clients, m_client_order.end());
     }
 
     priority_masks
@@ -203,61 +218,6 @@ class manager
     window_client_map m_clients;
 }; // class client_manager
 
-std::ostream & operator<<(std::ostream & os, const manager & cm)
-{
-  std::size_t i = 0;
-  for (i = 0; i < cm.m_client_order.size(); ++i) {
-    os << *cm.m_clients.at(cm.m_client_order[i]);
-
-    if (i < cm.m_client_order.size() - 1) {
-      os << ", ";
-    }
-  }
-
-  return os;
-}
-
-template<typename T>
-bool
-operator==(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
-{
-  return lhs.m_iterator == rhs.m_iterator;
-}
-
-template<typename T>
-bool
-operator!=(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
-{
-  return ! (lhs == rhs);
-}
-
-template<typename T>
-bool
-operator<(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
-{
-  return lhs.m_iterator < rhs.m_iterator;
-}
-
-template<typename T>
-bool
-operator>(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
-{
-  return lhs.m_iterator > rhs.m_iterator;
-}
-
-template<typename T>
-bool
-operator<=(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
-{
-  return lhs.m_iterator <= rhs.m_iterator;
-}
-
-template<typename T>
-bool
-operator>=(const manager::iterator<T> & lhs, const manager::iterator<T> & rhs)
-{
-  return lhs.m_iterator >= rhs.m_iterator;
-}
 
 }; // namespace client
 
