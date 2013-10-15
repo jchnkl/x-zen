@@ -98,11 +98,7 @@ class resize : public event::dispatcher
 
       if (! m_current_client) return;
 
-      m_pointer_x = e->root_x;
-      m_pointer_y = e->root_y;
-
       auto reply = m_current_client->get_geometry();
-
 
       double normalized_x = (double)(e->event_x - reply->width / 2)
                           / (reply->width / 2);
@@ -110,41 +106,33 @@ class resize : public event::dispatcher
                           / (reply->height / 2);
       double angle = (180 / M_PI) * (M_PI - std::atan2(normalized_x, normalized_y));
 
-      xcb_cursor_t cursor;
-
       // 360 / 8 = 45; 45 / 2 = 22.5
       if (angle >  22.5 && angle <=  67.5) {
-        cursor = m_cursors[XC_top_right_corner];
         m_direction = { TOP, RIGHT };
 
       } else if (angle >  67.5 && angle <= 112.5) {
-        cursor = m_cursors[XC_right_side];
         m_direction = { NONE, RIGHT };
 
       } else if (angle > 112.5 && angle <= 157.5) {
-        cursor = m_cursors[XC_bottom_right_corner];
         m_direction = { BOTTOM, RIGHT };
 
       } else if (angle > 157.5 && angle <= 202.5) {
-        cursor = m_cursors[XC_bottom_side];
         m_direction = { BOTTOM, NONE };
 
       } else if (angle > 202.5 && angle <= 247.5) {
-        cursor = m_cursors[XC_bottom_left_corner];
         m_direction = { BOTTOM, LEFT };
 
       } else if (angle > 247.5 && angle <= 292.5) {
-        cursor = m_cursors[XC_left_side];
         m_direction = { NONE, LEFT };
 
       } else if (angle > 292.5 && angle <= 337.5) {
-        cursor = m_cursors[XC_top_left_corner];
         m_direction = { TOP, LEFT };
 
       } else {
-        cursor = m_cursors[XC_top_side];
         m_direction = { TOP, NONE };
       }
+
+      xcb_cursor_t cursor = 0;
 
       m_pointer_x = reply->width / 2;
       m_pointer_y = reply->height / 2;
@@ -152,11 +140,35 @@ class resize : public event::dispatcher
       switch (m_direction.first) {
         case TOP:
           m_pointer_y = 0;
+
+          if (m_direction.second == LEFT) {
+            cursor = m_cursors[XC_top_left_corner];
+          } else if (m_direction.second == RIGHT) {
+            cursor = m_cursors[XC_top_right_corner];
+          } else {
+            cursor = m_cursors[XC_top_side];
+          }
           break;
+
         case BOTTOM:
           m_pointer_y = reply->height;
+
+          if (m_direction.second == LEFT) {
+            cursor = m_cursors[XC_bottom_left_corner];
+          } else if (m_direction.second == RIGHT) {
+            cursor = m_cursors[XC_bottom_right_corner];
+          } else {
+            cursor = m_cursors[XC_bottom_side];
+          }
           break;
+
         case NONE:
+          if (m_direction.second == LEFT) {
+            cursor = m_cursors[XC_left_side];
+          } else if (m_direction.second == RIGHT) {
+            cursor = m_cursors[XC_right_side];
+          }
+
         default:
           break;
       }
