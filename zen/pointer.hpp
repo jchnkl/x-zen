@@ -103,12 +103,6 @@ class resize : public event::dispatcher
 
       auto reply = m_current_client->get_geometry();
 
-      m_origin_x = reply->x;
-      m_origin_y = reply->y;
-      m_pointer_x = reply->x;
-      m_pointer_y = reply->y;
-      m_origin_width = reply->width;
-      m_origin_height = reply->height;
 
       double normalized_x = (double)(e->event_x - reply->width / 2)
                           / (reply->width / 2);
@@ -122,35 +116,26 @@ class resize : public event::dispatcher
       if (angle >  22.5 && angle <=  67.5) {
         cursor = m_cursors[XC_top_right_corner];
         m_direction = { TOP, RIGHT };
-        m_pointer_x += m_origin_width;
 
       } else if (angle >  67.5 && angle <= 112.5) {
         cursor = m_cursors[XC_right_side];
         m_direction = { NONE, RIGHT };
-        m_pointer_x += m_origin_width;
-        m_pointer_y += m_origin_height / 2;
 
       } else if (angle > 112.5 && angle <= 157.5) {
         cursor = m_cursors[XC_bottom_right_corner];
         m_direction = { BOTTOM, RIGHT };
-        m_pointer_x += m_origin_width;
-        m_pointer_y += m_origin_height;
 
       } else if (angle > 157.5 && angle <= 202.5) {
         cursor = m_cursors[XC_bottom_side];
         m_direction = { BOTTOM, NONE };
-        m_pointer_x += m_origin_width / 2;
-        m_pointer_y += m_origin_height;
 
       } else if (angle > 202.5 && angle <= 247.5) {
         cursor = m_cursors[XC_bottom_left_corner];
         m_direction = { BOTTOM, LEFT };
-        m_pointer_y += m_origin_height;
 
       } else if (angle > 247.5 && angle <= 292.5) {
         cursor = m_cursors[XC_left_side];
         m_direction = { NONE, LEFT };
-        m_pointer_y += reply->y + m_origin_height / 2;
 
       } else if (angle > 292.5 && angle <= 337.5) {
         cursor = m_cursors[XC_top_left_corner];
@@ -159,7 +144,6 @@ class resize : public event::dispatcher
       } else {
         cursor = m_cursors[XC_top_side];
         m_direction = { TOP, NONE };
-        m_pointer_x += reply->x + m_origin_width / 2;
 
       }
 
@@ -182,12 +166,12 @@ class resize : public event::dispatcher
 
       switch (m_direction.first) {
         case TOP:
-          m_current_client->y(m_origin_y + e->root_y - m_pointer_y)
-                           .height(m_origin_height + m_pointer_y - e->root_y);
+          m_current_client->y(e->root_y - m_pointer_y)
+                           .height(m_pointer_y - e->root_y);
           break;
 
         case BOTTOM:
-          m_current_client->height(m_origin_height + e->root_y - m_pointer_y);
+          m_current_client->height(e->root_y - m_pointer_y);
           break;
 
         case NONE:
@@ -197,18 +181,22 @@ class resize : public event::dispatcher
 
       switch (m_direction.second) {
         case RIGHT:
-          m_current_client->width(m_origin_width + e->root_x - m_pointer_x);
+          m_current_client->width(e->root_x - m_pointer_x);
           break;
 
         case LEFT:
-          m_current_client->x(m_origin_x + e->root_x - m_pointer_x)
-                           .width(m_origin_width + m_pointer_x - e->root_x);
+          m_current_client->x(e->root_x - m_pointer_x )
+                           .width(m_pointer_x - e->root_x);
+
           break;
 
         case NONE:
         default:
           break;
       };
+
+      m_pointer_x = e->root_x;
+      m_pointer_y = e->root_y;
 
       m_current_client->configure();
     }
@@ -274,8 +262,8 @@ class move : public event::dispatcher
 
       if (! m_current_client) return;
 
-      m_pointer_position_x = e->event_x;
-      m_pointer_position_y = e->event_y;
+      m_pointer_x = e->root_x;
+      m_pointer_y = e->root_y;
 
       m_s.insert({{ 0, XCB_MOTION_NOTIFY }}, this);
 
@@ -291,9 +279,12 @@ class move : public event::dispatcher
     {
       if (! (m_current_client && e->event == m_current_client->id())) return;
 
-      m_current_client->x(e->root_x - m_pointer_position_x)
-                       .y(e->root_y - m_pointer_position_y)
+      m_current_client->x(e->root_x - m_pointer_x)
+                       .y(e->root_y - m_pointer_y)
                        .configure();
+
+      m_pointer_x = e->root_x;
+      m_pointer_y = e->root_y;
     }
 
   private:
@@ -304,8 +295,8 @@ class move : public event::dispatcher
 
     xcb_cursor_t m_cursor;
     interface::client_ptr m_current_client;
-    unsigned int m_pointer_position_x;
-    unsigned int m_pointer_position_y;
+    unsigned int m_pointer_x;
+    unsigned int m_pointer_y;
 }; // class move
 
 }; // namespace pointer
