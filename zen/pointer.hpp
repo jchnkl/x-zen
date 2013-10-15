@@ -144,11 +144,39 @@ class resize : public event::dispatcher
       } else {
         cursor = m_cursors[XC_top_side];
         m_direction = { TOP, NONE };
-
       }
 
-      m_current_client->warp_pointer(m_pointer_x - reply->x,
-                                     m_pointer_y - reply->y);
+      m_pointer_x = reply->width / 2;
+      m_pointer_y = reply->height / 2;
+
+      switch (m_direction.first) {
+        case TOP:
+          m_pointer_y = 0;
+          break;
+        case BOTTOM:
+          m_pointer_y = reply->height;
+          break;
+        case NONE:
+        default:
+          break;
+      }
+
+      switch (m_direction.second) {
+        case LEFT:
+          m_pointer_x = 0;
+          break;
+        case RIGHT:
+          m_pointer_x = reply->width;
+          break;
+        case NONE:
+        default:
+          break;
+      }
+
+      m_current_client->warp_pointer(m_pointer_x, m_pointer_y);
+
+      m_pointer_x += reply->x;
+      m_pointer_y += reply->y;
 
       m_s.insert({{ 0, XCB_MOTION_NOTIFY }}, this);
 
