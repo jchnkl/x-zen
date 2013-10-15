@@ -94,10 +94,26 @@ class client : public interface::client
 
       std::vector<uint32_t> values;
 
-      if (e->value_mask & XCB_CONFIG_WINDOW_X)            values.push_back(e->x);
-      if (e->value_mask & XCB_CONFIG_WINDOW_Y)            values.push_back(e->y);
-      if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH)        values.push_back(e->width);
-      if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT)       values.push_back(e->height);
+      if (e->value_mask & XCB_CONFIG_WINDOW_X) {
+        m_x = e->x;
+        values.push_back(e->x);
+      }
+
+      if (e->value_mask & XCB_CONFIG_WINDOW_Y) {
+        m_y = e->y;
+        values.push_back(e->y);
+      }
+
+      if (e->value_mask & XCB_CONFIG_WINDOW_WIDTH) {
+        m_width = e->width;
+        values.push_back(e->width);
+      }
+
+      if (e->value_mask & XCB_CONFIG_WINDOW_HEIGHT) {
+        m_height = e->height;
+        values.push_back(e->height);
+      }
+
       if (e->value_mask & XCB_CONFIG_WINDOW_BORDER_WIDTH) values.push_back(e->border_width);
       if (e->value_mask & XCB_CONFIG_WINDOW_SIBLING)      values.push_back(e->sibling);
       if (e->value_mask & XCB_CONFIG_WINDOW_STACK_MODE)   values.push_back(e->stack_mode);
