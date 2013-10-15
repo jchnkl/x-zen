@@ -1,5 +1,5 @@
-#ifndef X_CLIENT_HPP
-#define X_CLIENT_HPP
+#ifndef ZEN_CLIENT_HPP
+#define ZEN_CLIENT_HPP
 
 #include <iostream>
 #include <climits>
@@ -224,4 +224,4 @@ std::ostream & operator<<(std::ostream & os, const client & c)
 
 }; // namespace zen
 
-#endif // X_CLIENT_HPP
+#endif // ZEN_CLIENT_HPP
