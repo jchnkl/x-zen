@@ -24,7 +24,7 @@ class manager
 {
   public:
     typedef std::deque<xcb_window_t> window_deque;
-    typedef std::unordered_map<xcb_window_t, client_ptr> window_client_map;
+    typedef std::unordered_map<xcb_window_t, client::ptr> window_client_map;
 
     friend std::ostream & operator<<(std::ostream &, const manager &);
 
@@ -110,7 +110,7 @@ class manager
           }
         }
 
-        const client_ptr & operator[](const difference_type & n)
+        const client::ptr & operator[](const difference_type & n)
         {
           return m_clients.at(m_iterator[n]);
         }
@@ -127,7 +127,7 @@ class manager
           return *this;
         }
 
-        const client_ptr & operator*(void)
+        const client::ptr & operator*(void)
         {
           return m_clients.at(*m_iterator);
         }
@@ -190,9 +190,9 @@ class manager
     insert(xcb_window_t window)
     {
       m_client_order.push_front(window);
-      m_clients[window] = client_ptr(
-          client_ptr(new wm_size_hints(
-                  client_ptr(new client(m_c, m_s, window)
+      m_clients[window] = client::ptr(
+          client::ptr(new wm_size_hints(
+                  client::ptr(new client(m_c, m_s, window)
                     ))));
     }
 

@@ -217,12 +217,14 @@ class resize : public event::dispatcher
     }
 
   private:
+    // enum direction { NONE, LEFT, RIGHT, TOP, BOTTOM };
+
     x::connection & m_c;
     event::source & m_s;
     cursors & m_cursors;
     interface::manager & m_manager;
 
-    interface::client_ptr m_current_client;
+    interface::client::ptr m_current_client;
     std::pair<algorithm::direction, algorithm::direction> m_direction;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
@@ -307,7 +309,7 @@ class move : public event::dispatcher
     interface::manager & m_manager;
 
     xcb_cursor_t m_cursor;
-    interface::client_ptr m_current_client;
+    interface::client::ptr m_current_client;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
 }; // class move

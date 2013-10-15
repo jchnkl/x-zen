@@ -11,7 +11,7 @@ namespace client {
 
 class wm_size_hints : public interface::client {
   public:
-    wm_size_hints(interface::client_ptr client) : interface::client(client)
+    wm_size_hints(interface::client::ptr client) : interface::client(client)
     {
       auto reply = m_c.get_property(false, m_window, XCB_ATOM_WM_NORMAL_HINTS,
                                     XCB_ATOM_WM_SIZE_HINTS, 0,

@@ -12,17 +12,17 @@ namespace interface {
 
 class client;
 
-typedef std::shared_ptr<client> client_ptr;
-
 class client : public x::window {
   public:
+    typedef std::shared_ptr<client> ptr;
+
     friend std::ostream & operator<<(std::ostream &, client &);
 
     client(x::connection & c, xcb_window_t w)
       : x::window(c, w)
     {}
 
-    client(client_ptr client)
+    client(client::ptr client)
       : x::window(client->m_c, client->m_window),  m_client(client)
     {}
 
@@ -104,7 +104,7 @@ class client : public x::window {
     }
 
   protected:
-    client_ptr m_client;
+    client::ptr m_client;
 
 }; // class client
 
@@ -113,7 +113,7 @@ class manager {
     virtual ~manager(void) {}
 
     class iterator
-      : public std::iterator<std::random_access_iterator_tag, client_ptr> {
+      : public std::iterator<std::random_access_iterator_tag, client::ptr> {
       public:
         virtual std::shared_ptr<iterator> clone(void) = 0;
         // i == j
@@ -140,7 +140,7 @@ class manager {
         // b - a
         virtual difference_type operator-(const iterator &) = 0;
         // i[n]
-        virtual const client_ptr & operator[](const difference_type &) = 0;
+        virtual const client::ptr & operator[](const difference_type &) = 0;
 
         // ++i
         virtual iterator & operator++(void) = 0;
@@ -152,14 +152,14 @@ class manager {
         // virtual iterator operator--(int) = 0;
 
         // *i
-        virtual const client_ptr & operator*(void) = 0;
+        virtual const client::ptr & operator*(void) = 0;
         // i->m
         virtual client & operator->(void) = 0;
     };
 
     class client_ptr_iterator {
       public:
-        typedef client_ptr                      value_type;
+        typedef client::ptr                     value_type;
         typedef iterator::difference_type       difference_type;
         typedef iterator::pointer               pointer;
         typedef iterator::reference             reference;
@@ -241,7 +241,7 @@ class manager {
           return m_iterator->operator-(*other.m_iterator);
         }
 
-        const client_ptr & operator[](const difference_type & n)
+        const client::ptr & operator[](const difference_type & n)
         {
           return m_iterator->operator[](n);
         }
@@ -272,7 +272,7 @@ class manager {
           return copy;
         }
 
-        const client_ptr & operator*(void)
+        const client::ptr & operator*(void)
         {
           return m_iterator->operator*();
         }
@@ -289,7 +289,7 @@ class manager {
     virtual client_ptr_iterator begin(void) = 0;
     virtual client_ptr_iterator end(void) = 0;
 
-    virtual client_ptr operator[](const xcb_window_t &) = 0;
+    virtual client::ptr operator[](const xcb_window_t &) = 0;
 };
 
 std::ostream &
