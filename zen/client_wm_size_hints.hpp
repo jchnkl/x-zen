@@ -17,31 +17,65 @@ class wm_size_hints : public interface::client {
                                     XCB_ATOM_WM_SIZE_HINTS, 0,
                                     XCB_ICCCM_NUM_WM_SIZE_HINTS_ELEMENTS);
 
-      xcb_size_hints_t hints;
-      uint8_t status = xcb_icccm_get_wm_size_hints_from_reply(
-          &hints, const_cast<xcb_get_property_reply_t *>(*reply));
+      xcb_icccm_get_wm_size_hints_from_reply(
+          &m_hints, const_cast<xcb_get_property_reply_t *>(*reply));
+    }
 
-      if (status) {
-        m_width_inc  = hints.width_inc;
-        m_height_inc = hints.height_inc;
+    virtual client & x(int x)
+    {
+      m_x += x;
+      return *this;
+    }
+
+    virtual client & y(int y)
+    {
+      m_y += y;
+      return *this;
+    }
+
+    virtual client & width(int width)
+    {
+      m_width += width;
+      return *this;
+    }
+
+    virtual client & height(int height)
+    {
+      m_height += height;
+      return *this;
+    }
+
+    virtual client & configure(void)
+    {
+      if (m_width >= m_hints.width_inc || m_width <= -m_hints.width_inc) {
+
+        if (m_x != 0) m_client->x(-m_width);
+
+        m_client->width(m_width);
+        m_x = 0;
+        m_width = 0;
       }
-    }
 
-    virtual client & width(unsigned int width)
-    {
-      return m_client->width(
-          (width / m_width_inc) * m_width_inc + m_width_inc);
-    }
+      if (m_height >= m_hints.height_inc || m_height <= -m_hints.height_inc) {
 
-    virtual client & height(unsigned int height)
-    {
-      return m_client->height(
-          (height / m_height_inc) * m_height_inc + m_height_inc);
+        if (m_y != 0) m_client->y(-m_height);
+
+        m_client->height(m_height);
+        m_y = 0;
+        m_height = 0;
+      }
+
+      m_client->configure();
+      return *this;
     }
 
   private:
-    unsigned int m_width_inc = 0;
-    unsigned int m_height_inc = 0;
+    int m_x = 0;
+    int m_y = 0;
+    int m_width = 0;
+    int m_height = 0;
+
+    xcb_size_hints_t m_hints;
 
 }; // class wm_size_hint
 
