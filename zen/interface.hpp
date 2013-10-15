@@ -16,6 +16,8 @@ typedef std::shared_ptr<client> client_ptr;
 
 class client : public x::window {
   public:
+    friend std::ostream & operator<<(std::ostream &, client &);
+
     client(x::connection & c, xcb_window_t w)
       : x::window(c, w)
     {}
@@ -289,6 +291,12 @@ class manager {
 
     virtual client_ptr operator[](const xcb_window_t &) = 0;
 };
+
+std::ostream &
+operator<<(std::ostream & os, client & c)
+{
+  return os << c.id();
+}
 
 }; // namespace zen
 
