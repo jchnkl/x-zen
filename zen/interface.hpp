@@ -109,6 +109,184 @@ class client : public x::window {
 class manager {
   public:
     virtual ~manager(void) {}
+
+    class iterator
+      : public std::iterator<std::random_access_iterator_tag, client_ptr> {
+      public:
+        virtual std::shared_ptr<iterator> clone(void) = 0;
+        // i == j
+        virtual bool operator==(const iterator &) = 0;
+        // i != j
+        virtual bool operator!=(const iterator &) = 0;
+
+        // a < b
+        virtual bool operator<(const iterator &) = 0;
+        // a > b
+        virtual bool operator>(const iterator &) = 0;
+        // a >= b
+        virtual bool operator<=(const iterator &) = 0;
+        // a <= b
+        virtual bool operator>=(const iterator &) = 0;
+
+        // r += n
+        virtual iterator & operator+=(const difference_type &) = 0;
+        // r -= n
+        virtual iterator & operator-=(const difference_type &) = 0;
+
+        // i - n
+        // virtual iterator operator-(const difference_type &) = 0;
+        // b - a
+        virtual difference_type operator-(const iterator &) = 0;
+        // i[n]
+        virtual const client_ptr & operator[](const difference_type &) = 0;
+
+        // ++i
+        virtual iterator & operator++(void) = 0;
+        // --i
+        virtual iterator & operator--(void) = 0;
+        // i++
+        // virtual iterator operator++(int) = 0;
+        // i--
+        // virtual iterator operator--(int) = 0;
+
+        // *i
+        virtual const client_ptr & operator*(void) = 0;
+        // i->m
+        virtual client & operator->(void) = 0;
+    };
+
+    class client_ptr_iterator {
+      public:
+        typedef client_ptr                      value_type;
+        typedef iterator::difference_type       difference_type;
+        typedef iterator::pointer               pointer;
+        typedef iterator::reference             reference;
+        typedef std::random_access_iterator_tag iterator_category;
+
+        client_ptr_iterator(const std::shared_ptr<iterator> & iterator)
+          : m_iterator(iterator)
+        {}
+
+        client_ptr_iterator(const client_ptr_iterator & other)
+        {
+          m_iterator = other.m_iterator->clone();
+        }
+
+        client_ptr_iterator & operator=(const client_ptr_iterator & other)
+        {
+          m_iterator = other.m_iterator->clone();
+          return *this;
+        }
+
+        bool operator==(const client_ptr_iterator & other)
+        {
+          return m_iterator->operator==(*other.m_iterator);
+        }
+
+        bool operator!=(const client_ptr_iterator & other)
+        {
+          return m_iterator->operator!=(*other.m_iterator);
+        }
+
+        bool operator<(const client_ptr_iterator & other)
+        {
+          return m_iterator->operator<(*other.m_iterator);
+        }
+
+        bool operator>(const client_ptr_iterator & other)
+        {
+          return m_iterator->operator>(*other.m_iterator);
+        }
+
+        bool operator<=(const client_ptr_iterator & other)
+        {
+          return m_iterator->operator<=(*other.m_iterator);
+        }
+
+        bool operator>=(const client_ptr_iterator & other)
+        {
+          return m_iterator->operator>=(*other.m_iterator);
+        }
+
+        client_ptr_iterator & operator+=(const difference_type & n)
+        {
+          m_iterator->operator+=(n);
+          return *this;
+        }
+
+        client_ptr_iterator & operator-=(const difference_type & n)
+        {
+          m_iterator->operator-=(n);
+          return *this;
+        }
+
+        client_ptr_iterator operator-(const difference_type & n)
+        {
+          client_ptr_iterator copy = *this;
+          copy.m_iterator->operator-=(n);
+          return copy;
+        }
+
+        client_ptr_iterator operator+(const difference_type & n)
+        {
+          client_ptr_iterator copy = *this;
+          copy.m_iterator->operator+=(n);
+          return copy;
+        }
+
+        difference_type operator-(const client_ptr_iterator & other)
+        {
+          return m_iterator->operator-(*other.m_iterator);
+        }
+
+        const client_ptr & operator[](const difference_type & n)
+        {
+          return m_iterator->operator[](n);
+        }
+
+        client_ptr_iterator & operator++(void) // prefix
+        {
+          m_iterator->operator++();
+          return *this;
+        }
+
+        client_ptr_iterator operator++(int) // postfix
+        {
+          client_ptr_iterator copy = *this;
+          this->operator++();
+          return copy;
+        }
+
+        client_ptr_iterator & operator--(void) // prefix
+        {
+          m_iterator->operator--();
+          return *this;
+        }
+
+        client_ptr_iterator operator--(int) // postfix
+        {
+          client_ptr_iterator copy = *this;
+          this->operator--();
+          return copy;
+        }
+
+        const client_ptr & operator*(void)
+        {
+          return m_iterator->operator*();
+        }
+
+        client & operator->(void)
+        {
+          return m_iterator->operator->();
+        }
+
+      private:
+        std::shared_ptr<iterator> m_iterator;
+    };
+
+    virtual client_ptr_iterator begin(void) = 0;
+    virtual client_ptr_iterator end(void) = 0;
+
     virtual client_ptr operator[](const xcb_window_t &) = 0;
 };
 
