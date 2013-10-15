@@ -71,12 +71,12 @@ class client : public x::window {
       return m_client->y(y);
     }
 
-    virtual client & width(unsigned int width)
+    virtual client & width(int width)
     {
       return m_client->width(width);
     }
 
-    virtual client & height(unsigned int height)
+    virtual client & height(int height)
     {
       return m_client->height(height);
     }

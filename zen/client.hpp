@@ -136,28 +136,28 @@ class client : public interface::client
     virtual client & x(int x)
     {
       m_mask |= XCB_CONFIG_WINDOW_X;
-      m_x = x;
+      m_x += x;
       return *this;
     }
 
     virtual client & y(int y)
     {
       m_mask |= XCB_CONFIG_WINDOW_Y;
-      m_y = y;
+      m_y += y;
       return *this;
     }
 
-    virtual client & width(unsigned int width)
+    virtual client & width(int width)
     {
       m_mask |= XCB_CONFIG_WINDOW_WIDTH;
-      m_width = width;
+      m_width += width;
       return *this;
     }
 
-    virtual client & height(unsigned int height)
+    virtual client & height(int height)
     {
       m_mask |= XCB_CONFIG_WINDOW_HEIGHT;
-      m_height = height;
+      m_height += height;
       return *this;
     }
 
