@@ -2,7 +2,6 @@
 #define X_POINTER_HPP
 
 #include <iostream>
-#include <cmath>
 #include <climits>
 #include <unordered_map>
 
@@ -11,6 +10,7 @@
 #include "../x/window.hpp"
 #include "../x/connection.hpp"
 #include "../x/interface.hpp"
+#include "../zen/algorithm.hpp"
 #include "../zen/interface.hpp"
 
 namespace zen {
@@ -83,6 +83,8 @@ class resize : public event::dispatcher
     void
     handle(xcb_button_press_event_t * e)
     {
+      using namespace algorithm;
+
       if (XCB_BUTTON_RELEASE == (e->response_type & ~0x80)) {
         m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
         m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
@@ -100,37 +102,8 @@ class resize : public event::dispatcher
 
       auto reply = m_current_client->get_geometry();
 
-      double normalized_x = (double)(e->event_x - reply->width / 2)
-                          / (reply->width / 2);
-      double normalized_y = (double)(e->event_y - reply->height / 2)
-                          / (reply->height / 2);
-      double angle = (180 / M_PI) * (M_PI - std::atan2(normalized_x, normalized_y));
-
-      // 360 / 8 = 45; 45 / 2 = 22.5
-      if (angle >  22.5 && angle <=  67.5) {
-        m_direction = { TOP, RIGHT };
-
-      } else if (angle >  67.5 && angle <= 112.5) {
-        m_direction = { NONE, RIGHT };
-
-      } else if (angle > 112.5 && angle <= 157.5) {
-        m_direction = { BOTTOM, RIGHT };
-
-      } else if (angle > 157.5 && angle <= 202.5) {
-        m_direction = { BOTTOM, NONE };
-
-      } else if (angle > 202.5 && angle <= 247.5) {
-        m_direction = { BOTTOM, LEFT };
-
-      } else if (angle > 247.5 && angle <= 292.5) {
-        m_direction = { NONE, LEFT };
-
-      } else if (angle > 292.5 && angle <= 337.5) {
-        m_direction = { TOP, LEFT };
-
-      } else {
-        m_direction = { TOP, NONE };
-      }
+      m_direction = corner()(e->event_x, e->event_y,
+                             reply->width, reply->height);
 
       xcb_cursor_t cursor = 0;
 
@@ -202,6 +175,8 @@ class resize : public event::dispatcher
     void
     handle(xcb_motion_notify_event_t * e)
     {
+      using namespace algorithm;
+
       if (! (m_current_client && e->event == m_current_client->id())) return;
 
       switch (m_direction.first) {
@@ -242,15 +217,13 @@ class resize : public event::dispatcher
     }
 
   private:
-    enum direction { NONE, LEFT, RIGHT, TOP, BOTTOM };
-
     x::connection & m_c;
     event::source & m_s;
     cursors & m_cursors;
     interface::manager & m_manager;
 
     interface::client_ptr m_current_client;
-    std::pair<direction, direction> m_direction;
+    std::pair<algorithm::direction, algorithm::direction> m_direction;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
     unsigned int m_origin_x;
