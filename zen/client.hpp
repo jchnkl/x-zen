@@ -18,7 +18,6 @@ namespace event = x::interface::event;
 
 class client;
 
-
 class client : public interface::client
              , public event::dispatcher
              , public event::sink<xcb_enter_notify_event_t>
