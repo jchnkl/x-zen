@@ -10,8 +10,6 @@ namespace zen {
 
 namespace interface {
 
-class client;
-
 class client : public x::window {
   public:
     typedef std::shared_ptr<client> ptr;
@@ -107,6 +105,12 @@ class client : public x::window {
     client::ptr m_client;
 
 }; // class client
+
+std::ostream &
+operator<<(std::ostream & os, client & c)
+{
+  return os << c.id();
+}
 
 class manager {
   public:
@@ -292,11 +296,6 @@ class manager {
     virtual client::ptr operator[](const xcb_window_t &) = 0;
 };
 
-std::ostream &
-operator<<(std::ostream & os, client & c)
-{
-  return os << c.id();
-}
 
 }; // namespace zen
 
