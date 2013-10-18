@@ -296,6 +296,18 @@ class manager {
     virtual client::ptr operator[](const xcb_window_t &) = 0;
 };
 
+template<typename E>
+class handler {
+  public:
+    virtual void handle(client::ptr &, E * const) = 0;
+}; // class handler
+
+template<typename E>
+class event {
+  public:
+    virtual void insert(handler<E> * h) = 0;
+    virtual void remove(handler<E> * h) = 0;
+}; // class event
 
 }; // namespace interface
 
