@@ -226,10 +226,7 @@ class resize : public event::dispatcher
     std::pair<algorithm::direction, algorithm::direction> m_direction;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
-    unsigned int m_origin_x;
-    unsigned int m_origin_y;
-    unsigned int m_origin_width;
-    unsigned int m_origin_height;
+
 }; // class resize
 
 class move : public event::dispatcher
