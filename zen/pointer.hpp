@@ -12,6 +12,7 @@
 #include "../x/interface.hpp"
 #include "../zen/algorithm.hpp"
 #include "../zen/interface.hpp"
+#include "../zen/client_wm_size_hints.hpp"
 
 namespace zen {
 
@@ -156,7 +157,7 @@ class resize : public event::dispatcher
     void
     handle(interface::client::ptr & c, xcb_button_press_event_t * const e)
     {
-      m_client = c;
+      m_client = interface::client::ptr(new client::wm_size_hints(c));
       if (XCB_BUTTON_PRESS == (e->response_type & ~0x80)) {
         handle_button_press(e);
       } else {
