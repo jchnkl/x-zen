@@ -297,8 +297,8 @@ class manager {
 };
 
 
-}; // namespace zen
-
 }; // namespace interface
+
+}; // namespace zen
 
 #endif // ZEN_INTERFACE_HPP
