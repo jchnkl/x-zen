@@ -217,8 +217,6 @@ class resize : public event::dispatcher
     }
 
   private:
-    // enum direction { NONE, LEFT, RIGHT, TOP, BOTTOM };
-
     x::connection & m_c;
     event::source & m_s;
     cursors & m_cursors;
