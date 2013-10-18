@@ -88,19 +88,19 @@ class resize : public event::dispatcher
       if (XCB_BUTTON_RELEASE == (e->response_type & ~0x80)) {
         m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
         m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
-        m_current_client.reset();
+        m_client.reset();
         return;
 
       } else if (XCB_BUTTON_INDEX_3 == e->detail && XCB_MOD_MASK_4 == e->state) {
-        m_current_client = m_manager[e->event];
+        m_client = m_manager[e->event];
 
       } else {
         return;
       }
 
-      if (! m_current_client) return;
+      if (! m_client) return;
 
-      auto reply = m_current_client->get_geometry();
+      auto reply = m_client->get_geometry();
 
       m_direction = corner()(e->event_x, e->event_y,
                              reply->width, reply->height);
@@ -158,14 +158,14 @@ class resize : public event::dispatcher
           break;
       }
 
-      m_current_client->warp_pointer(m_pointer_x, m_pointer_y);
+      m_client->warp_pointer(m_pointer_x, m_pointer_y);
 
       m_pointer_x += reply->x;
       m_pointer_y += reply->y;
 
       m_s.insert({{ 0, XCB_MOTION_NOTIFY }}, this);
 
-      *(m_c.grab_pointer(false, m_current_client->id(),
+      *(m_c.grab_pointer(false, m_client->id(),
                          XCB_EVENT_MASK_BUTTON_MOTION
                          | XCB_EVENT_MASK_BUTTON_RELEASE,
                          XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
@@ -177,16 +177,16 @@ class resize : public event::dispatcher
     {
       using namespace algorithm;
 
-      if (! (m_current_client && e->event == m_current_client->id())) return;
+      if (! (m_client && e->event == m_client->id())) return;
 
       switch (m_direction.first) {
         case TOP:
-          m_current_client->y(e->root_y - m_pointer_y)
+          m_client->y(e->root_y - m_pointer_y)
                            .height(m_pointer_y - e->root_y);
           break;
 
         case BOTTOM:
-          m_current_client->height(e->root_y - m_pointer_y);
+          m_client->height(e->root_y - m_pointer_y);
           break;
 
         case NONE:
@@ -196,11 +196,11 @@ class resize : public event::dispatcher
 
       switch (m_direction.second) {
         case RIGHT:
-          m_current_client->width(e->root_x - m_pointer_x);
+          m_client->width(e->root_x - m_pointer_x);
           break;
 
         case LEFT:
-          m_current_client->x(e->root_x - m_pointer_x )
+          m_client->x(e->root_x - m_pointer_x )
                            .width(m_pointer_x - e->root_x);
 
           break;
@@ -213,7 +213,7 @@ class resize : public event::dispatcher
       m_pointer_x = e->root_x;
       m_pointer_y = e->root_y;
 
-      m_current_client->configure();
+      m_client->configure();
     }
 
   private:
@@ -222,7 +222,7 @@ class resize : public event::dispatcher
     cursors & m_cursors;
     interface::manager & m_manager;
 
-    interface::client::ptr m_current_client;
+    interface::client::ptr m_client;
     std::pair<algorithm::direction, algorithm::direction> m_direction;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
