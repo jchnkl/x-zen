@@ -260,24 +260,24 @@ class move : public event::dispatcher
       if (XCB_BUTTON_RELEASE == (e->response_type & ~0x80)) {
         m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
         m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
-        m_current_client.reset();
+        m_client.reset();
         return;
 
       } else if (XCB_BUTTON_INDEX_1 == e->detail && XCB_MOD_MASK_4 == e->state) {
-        m_current_client = m_manager[e->event];
+        m_client = m_manager[e->event];
 
       } else {
         return;
       }
 
-      if (! m_current_client) return;
+      if (! m_client) return;
 
       m_pointer_x = e->root_x;
       m_pointer_y = e->root_y;
 
       m_s.insert({{ 0, XCB_MOTION_NOTIFY }}, this);
 
-      *(m_current_client->grab_pointer(
+      *(m_client->grab_pointer(
             false,
             XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE,
             XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE,
@@ -287,9 +287,9 @@ class move : public event::dispatcher
     void
     handle(xcb_motion_notify_event_t * e)
     {
-      if (! (m_current_client && e->event == m_current_client->id())) return;
+      if (! (m_client && e->event == m_client->id())) return;
 
-      m_current_client->x(e->root_x - m_pointer_x)
+      m_client->x(e->root_x - m_pointer_x)
                        .y(e->root_y - m_pointer_y)
                        .configure();
 
@@ -304,7 +304,7 @@ class move : public event::dispatcher
     interface::manager & m_manager;
 
     xcb_cursor_t m_cursor;
-    interface::client::ptr m_current_client;
+    interface::client::ptr m_client;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
 }; // class move
