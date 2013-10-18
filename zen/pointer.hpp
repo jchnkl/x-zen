@@ -56,49 +56,23 @@ class cursors {
 }; // class cursors
 
 class resize : public event::dispatcher
-             , public event::sink<xcb_button_press_event_t>
              , public event::sink<xcb_motion_notify_event_t>
+             , public interface::handler<xcb_button_press_event_t>
              {
   public:
     resize(x::connection & c, event::source & s,
            cursors & cursors, interface::manager & manager)
       : m_c(c), m_s(s), m_cursors(cursors), m_manager(manager)
-    {
-      m_s.insert(this);
-    }
-
-    ~resize(void)
-    {
-      m_s.remove(this);
-    }
-
-    priority_masks
-    masks(void)
-    {
-      return { { UINT_MAX, XCB_BUTTON_PRESS }
-             , { UINT_MAX, XCB_BUTTON_RELEASE }
-             };
-    }
+    {}
 
     void
-    handle(xcb_button_press_event_t * e)
+    handle_button_press(xcb_button_press_event_t * const e)
     {
-      using namespace algorithm;
-
-      if (XCB_BUTTON_RELEASE == (e->response_type & ~0x80)) {
-        m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
-        m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
-        m_client.reset();
-        return;
-
-      } else if (XCB_BUTTON_INDEX_3 == e->detail && XCB_MOD_MASK_4 == e->state) {
-        m_client = m_manager[e->event];
-
-      } else {
+      if (! (XCB_BUTTON_INDEX_3 == e->detail && XCB_MOD_MASK_4 == e->state)) {
         return;
       }
 
-      if (! m_client) return;
+      using namespace algorithm;
 
       auto reply = m_client->get_geometry();
 
@@ -170,6 +144,24 @@ class resize : public event::dispatcher
                          | XCB_EVENT_MASK_BUTTON_RELEASE,
                          XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC,
                          XCB_NONE, cursor, XCB_TIME_CURRENT_TIME));
+    }
+
+    void
+    handle_button_release(xcb_button_press_event_t * const e)
+    {
+      m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
+      m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
+    }
+
+    void
+    handle(interface::client::ptr & c, xcb_button_press_event_t * const e)
+    {
+      m_client = c;
+      if (XCB_BUTTON_PRESS == (e->response_type & ~0x80)) {
+        handle_button_press(e);
+      } else {
+        handle_button_release(e);
+      }
     }
 
     void
