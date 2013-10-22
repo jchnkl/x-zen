@@ -28,26 +28,26 @@ class manager
 
     friend std::ostream & operator<<(std::ostream &, const manager &);
 
-    class iterator : public interface::manager::iterator {
+    class iterator : public interface::client::iterator {
       public:
         iterator(const window_client_map & clients,
                  const window_deque::iterator & iterator)
           : m_iterator(iterator), m_clients(clients)
         {}
 
-        std::shared_ptr<interface::manager::iterator> clone(void)
+        std::shared_ptr<interface::client::iterator> clone(void)
         {
-          return std::shared_ptr<interface::manager::iterator>(
+          return std::shared_ptr<interface::client::iterator>(
               new iterator(*this));
         }
 
-        bool operator==(const interface::manager::iterator & other)
+        bool operator==(const interface::client::iterator & other)
         {
           return typeid(*this) == typeid(other)
             && equal(dynamic_cast<const iterator &>(other));
         }
 
-        bool operator!=(const interface::manager::iterator & other)
+        bool operator!=(const interface::client::iterator & other)
         {
           return ! this->operator==(other);
         }
@@ -57,7 +57,7 @@ class manager
           return m_iterator == other.m_iterator;
         }
 
-        bool operator<(const interface::manager::iterator & other)
+        bool operator<(const interface::client::iterator & other)
         {
           return typeid(*this) == typeid(other)
             && (dynamic_cast<const iterator &>(*this).m_iterator
@@ -65,7 +65,7 @@ class manager
                 dynamic_cast<const iterator &>(other).m_iterator);
         }
 
-        bool operator>(const interface::manager::iterator & other)
+        bool operator>(const interface::client::iterator & other)
         {
           return typeid(*this) == typeid(other)
             && (dynamic_cast<const iterator &>(*this).m_iterator
@@ -73,7 +73,7 @@ class manager
                 dynamic_cast<const iterator &>(other).m_iterator);
         }
 
-        bool operator<=(const interface::manager::iterator & other)
+        bool operator<=(const interface::client::iterator & other)
         {
           return typeid(*this) == typeid(other)
             && (dynamic_cast<const iterator &>(*this).m_iterator
@@ -81,7 +81,7 @@ class manager
                 dynamic_cast<const iterator &>(other).m_iterator);
         }
 
-        bool operator>=(const interface::manager::iterator & other)
+        bool operator>=(const interface::client::iterator & other)
         {
           return typeid(*this) == typeid(other)
             && (dynamic_cast<const iterator &>(*this).m_iterator
@@ -89,19 +89,19 @@ class manager
                 dynamic_cast<const iterator &>(other).m_iterator);
         }
 
-        interface::manager::iterator & operator+=(const difference_type & n)
+        interface::client::iterator & operator+=(const difference_type & n)
         {
           m_iterator += n;
           return *this;
         }
 
-        interface::manager::iterator & operator-=(const difference_type & n)
+        interface::client::iterator & operator-=(const difference_type & n)
         {
           m_iterator -= n;
           return *this;
         }
 
-        difference_type operator-(const interface::manager::iterator & other)
+        difference_type operator-(const interface::client::iterator & other)
         {
           if (typeid(*this) == typeid(other)) {
             return m_iterator - dynamic_cast<const iterator &>(other).m_iterator;
@@ -142,17 +142,17 @@ class manager
         const window_client_map & m_clients;
     };
 
-    client_ptr_iterator begin(void)
+    client::ptr_iterator begin(void)
     {
-      return client_ptr_iterator(
-          std::shared_ptr<interface::manager::iterator>(
+      return client::ptr_iterator(
+          std::shared_ptr<interface::client::iterator>(
             new iterator(m_clients, m_client_order.begin())));
     }
 
-    client_ptr_iterator end(void)
+    client::ptr_iterator end(void)
     {
-      return client_ptr_iterator(
-          std::shared_ptr<interface::manager::iterator>(
+      return client::ptr_iterator(
+          std::shared_ptr<interface::client::iterator>(
             new iterator(m_clients, m_client_order.end())));
     }
 
