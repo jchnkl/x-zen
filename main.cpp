@@ -29,6 +29,7 @@ int main(int argc, char ** argv)
     button_event(cm, source, { XCB_BUTTON_PRESS, XCB_BUTTON_RELEASE });
 
   button_event.insert(&move);
+  button_event.insert(&resize);
 
   source.run();
 
