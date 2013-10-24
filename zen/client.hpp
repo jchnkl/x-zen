@@ -16,7 +16,6 @@ namespace client {
 
 namespace event = x::interface::event;
 
-class client;
 
 class client : public interface::client
              , public event::dispatcher
