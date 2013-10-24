@@ -14,20 +14,19 @@ namespace zen {
 
 namespace client {
 
-namespace event = x::interface::event;
-
+namespace xevent = x::interface::event;
 
 class client : public interface::client
-             , public event::dispatcher
-             , public event::sink<xcb_enter_notify_event_t>
-             , public event::sink<xcb_focus_in_event_t>
-             , public event::sink<xcb_map_request_event_t>
-             , public event::sink<xcb_configure_request_event_t>
+             , public xevent::dispatcher
+             , public xevent::sink<xcb_enter_notify_event_t>
+             , public xevent::sink<xcb_focus_in_event_t>
+             , public xevent::sink<xcb_map_request_event_t>
+             , public xevent::sink<xcb_configure_request_event_t>
              {
   public:
     friend std::ostream & operator<<(std::ostream &, const client &);
 
-    client(x::connection & c, event::source & s, xcb_window_t w)
+    client(x::connection & c, xevent::source & s, xcb_window_t w)
       : interface::client(c, w), m_s(s)
     {
       s.insert(this);
@@ -222,7 +221,7 @@ class client : public interface::client
     }
 
   private:
-    event::source & m_s;
+    xevent::source & m_s;
 
     unsigned int m_mask = 0;
 
