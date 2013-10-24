@@ -47,12 +47,10 @@ class event : public x::interface::event::dispatcher
     void
     handle(E * e)
     {
-      auto client = m_manager[get_window(e)];
-      if (client) {
-        for (auto & h : handlers) {
-          h->handle(client, e);
-        }
-      }
+      try {
+        using zen::interface::handler;
+        dynamic_cast<handler<E> &>(*m_manager[get_window(e)]).handle(e);
+      } catch (...) {}
     }
 
   protected:
