@@ -6,6 +6,7 @@ LDFLAGS=$(shell pkg-config --libs ${LIBS})
 CPPSRCS=main.cpp
 
 HPPSRCS=x/event.hpp \
+				x/cursor.hpp \
 				x/request.hpp \
 				x/requests.hpp \
 				x/interface.hpp \

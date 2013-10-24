@@ -5,8 +5,7 @@
 #include <climits>
 #include <unordered_map>
 
-#include <X11/cursorfont.h>
-
+#include "../x/cursor.hpp"
 #include "../x/window.hpp"
 #include "../x/connection.hpp"
 #include "../x/interface.hpp"
@@ -20,50 +19,14 @@ namespace pointer {
 
 namespace event = x::interface::event;
 
-class cursors {
-  public:
-    cursors(x::connection & c) : m_c(c)
-    {
-      m_font = m_c.generate_id();
-      m_c.open_font(m_font, "cursor");
-    }
-
-    ~cursors(void)
-    {
-      m_c.close_font(m_font);
-      for (auto & item : m_cursors) {
-        m_c.free_cursor(item.second);
-      }
-    }
-
-    xcb_cursor_t
-    operator[](const uint16_t & source_char)
-    {
-      try {
-        return m_cursors.at(source_char);
-      } catch (...) {
-        m_cursors[source_char] = m_c.generate_id();
-        m_c.create_glyph_cursor(m_cursors[source_char], m_font, m_font,
-                                source_char, source_char + 1,
-                                0, 0, 0, 0xffff, 0xffff, 0xffff);
-        return m_cursors[source_char];
-      }
-    }
-
-  private:
-    x::connection & m_c;
-    xcb_font_t m_font;
-    std::unordered_map<uint16_t, xcb_cursor_t> m_cursors;
-}; // class cursors
-
 class resize : public event::dispatcher
              , public event::sink<xcb_motion_notify_event_t>
              , public interface::handler<xcb_button_press_event_t>
              {
   public:
     resize(x::connection & c, event::source & s,
-           cursors & cursors, interface::manager & manager)
-      : m_c(c), m_s(s), m_cursors(cursors), m_manager(manager)
+           x::cursor & cursor, interface::manager & manager)
+      : m_c(c), m_s(s), m_cursor(cursor), m_manager(manager)
     {}
 
     void
@@ -90,11 +53,11 @@ class resize : public event::dispatcher
           m_pointer_y = 0;
 
           if (m_direction.second == LEFT) {
-            cursor = m_cursors[XC_top_left_corner];
+            cursor = m_cursor[XC_top_left_corner];
           } else if (m_direction.second == RIGHT) {
-            cursor = m_cursors[XC_top_right_corner];
+            cursor = m_cursor[XC_top_right_corner];
           } else {
-            cursor = m_cursors[XC_top_side];
+            cursor = m_cursor[XC_top_side];
           }
           break;
 
@@ -102,19 +65,19 @@ class resize : public event::dispatcher
           m_pointer_y = reply->height;
 
           if (m_direction.second == LEFT) {
-            cursor = m_cursors[XC_bottom_left_corner];
+            cursor = m_cursor[XC_bottom_left_corner];
           } else if (m_direction.second == RIGHT) {
-            cursor = m_cursors[XC_bottom_right_corner];
+            cursor = m_cursor[XC_bottom_right_corner];
           } else {
-            cursor = m_cursors[XC_bottom_side];
+            cursor = m_cursor[XC_bottom_side];
           }
           break;
 
         case NONE:
           if (m_direction.second == LEFT) {
-            cursor = m_cursors[XC_left_side];
+            cursor = m_cursor[XC_left_side];
           } else if (m_direction.second == RIGHT) {
-            cursor = m_cursors[XC_right_side];
+            cursor = m_cursor[XC_right_side];
           }
 
         default:
@@ -212,7 +175,7 @@ class resize : public event::dispatcher
   private:
     x::connection & m_c;
     event::source & m_s;
-    cursors & m_cursors;
+    x::cursor & m_cursor;
     interface::manager & m_manager;
 
     interface::client::ptr m_client;
@@ -228,8 +191,8 @@ class move : public event::dispatcher
            {
   public:
     move(x::connection & c, event::source & s,
-         cursors & cursors, interface::manager & manager)
-      : m_c(c), m_s(s), m_cursors(cursors), m_manager(manager)
+         x::cursor & cursor, interface::manager & manager)
+      : m_c(c), m_s(s), m_cursor(cursor), m_manager(manager)
     {}
 
     void
@@ -248,7 +211,7 @@ class move : public event::dispatcher
             false,
             XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_BUTTON_RELEASE,
             XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_NONE,
-            m_cursors[XC_fleur]));
+            m_cursor[XC_fleur]));
     }
 
     void
@@ -285,10 +248,9 @@ class move : public event::dispatcher
   private:
     x::connection & m_c;
     event::source & m_s;
-    cursors & m_cursors;
+    x::cursor & m_cursor;
     interface::manager & m_manager;
 
-    xcb_cursor_t m_cursor;
     interface::client::ptr m_client;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
