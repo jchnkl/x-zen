@@ -14,13 +14,13 @@ namespace zen {
 
 namespace client {
 
-namespace event = x::interface::event;
+namespace xevent = x::interface::event;
 
 class manager
   : public interface::manager
-  , public event::dispatcher
-  , public event::sink<xcb_create_notify_event_t>
-  , public event::sink<xcb_destroy_notify_event_t>
+  , public xevent::dispatcher
+  , public xevent::sink<xcb_create_notify_event_t>
+  , public xevent::sink<xcb_destroy_notify_event_t>
 {
   public:
     typedef std::deque<xcb_window_t> window_deque;
@@ -156,7 +156,7 @@ class manager
             new iterator(m_clients, m_client_order.end())));
     }
 
-    manager(x::connection & c, event::source & s)
+    manager(x::connection & c, xevent::source & s)
       : m_c(c), m_s(s)
     {
       s.insert(this);
@@ -212,7 +212,7 @@ class manager
 
   private:
     x::connection & m_c;
-    event::source & m_s;
+    xevent::source & m_s;
 
     window_deque m_client_order;
     window_client_map m_clients;
