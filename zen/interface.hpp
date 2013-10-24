@@ -235,6 +235,26 @@ class client : public x::window {
 
     virtual ~client(void) {}
 
+    virtual client & insert(key::handler * const h)
+    {
+      return m_client->insert(h);
+    }
+
+    virtual client & remove(key::handler * const h)
+    {
+      return m_client->remove(h);
+    }
+
+    virtual client & insert(button::handler * const h)
+    {
+      return m_client->insert(h);
+    }
+
+    virtual client & remove(button::handler * const h)
+    {
+      return m_client->remove(h);
+    }
+
     virtual int x(void)
     {
       return m_client->x();
