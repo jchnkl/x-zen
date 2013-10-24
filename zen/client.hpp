@@ -202,6 +202,18 @@ class client : public interface::client
       return *this;
     }
 
+    client & remove(interface::button::handler * const h)
+    {
+      m_button_handler.erase(h);
+      return *this;
+    }
+
+    client & focus(xcb_input_focus_t revert_to = XCB_INPUT_FOCUS_PARENT)
+    {
+      window::focus(revert_to);
+      return *this;
+    }
+
     virtual int x(void)                       { return m_x; }
     virtual int y(void)                       { return m_y; }
     virtual unsigned int width(void)          { return m_width; }
