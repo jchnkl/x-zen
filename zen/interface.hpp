@@ -51,6 +51,11 @@ class client : public x::window {
 
     friend std::ostream & operator<<(std::ostream &, client &);
 
+    class factory {
+      public:
+        virtual ptr make(const xcb_window_t &) = 0;
+    }; // class factory
+
     class iterator
       : public std::iterator<std::random_access_iterator_tag, client::ptr> {
       public:
