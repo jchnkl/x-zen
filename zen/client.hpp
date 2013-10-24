@@ -5,6 +5,7 @@
 #include <climits>
 #include <cmath>
 #include <memory>
+#include <unordered_set>
 
 #include "../x/window.hpp"
 #include "../x/interface.hpp"
@@ -14,6 +15,9 @@ namespace zen {
 
 namespace client {
 
+using zen::interface::event;
+namespace key = zen::interface::key;
+namespace button = zen::interface::button;
 namespace xevent = x::interface::event;
 
 class client : public interface::client
@@ -22,14 +26,24 @@ class client : public interface::client
              , public xevent::sink<xcb_focus_in_event_t>
              , public xevent::sink<xcb_map_request_event_t>
              , public xevent::sink<xcb_configure_request_event_t>
+             , public zen::interface::handler<xcb_key_press_event_t>
+             , public zen::interface::handler<xcb_button_press_event_t>
              {
   public:
     friend std::ostream & operator<<(std::ostream &, const client &);
 
-    client(x::connection & c, xevent::source & s, xcb_window_t w)
+    client(x::connection & c, xevent::source & s,
+           event<xcb_key_press_event_t> * key_event_handler,
+           event<xcb_button_press_event_t> * button_event_handler,
+           const xcb_window_t & w)
       : interface::client(c, w), m_s(s)
+      , m_key_event_handler(key_event_handler)
+      , m_button_event_handler(button_event_handler)
     {
       s.insert(this);
+      m_key_event_handler->insert(this);
+      m_button_event_handler->insert(this);
+
       auto reply = get_attributes();
       if (! reply->override_redirect) {
         change_attributes(XCB_CW_BORDER_PIXEL | XCB_CW_EVENT_MASK,
@@ -64,6 +78,8 @@ class client : public interface::client
     ~client(void)
     {
       m_s.remove(this);
+      m_key_event_handler->remove(this);
+      m_button_event_handler->remove(this);
     }
 
     priority_masks
@@ -142,6 +158,48 @@ class client : public interface::client
       } else { // XCB_FOCUS_OUT
         change_attributes(XCB_CW_BORDER_PIXEL, { 0x000000ff });
       }
+    }
+
+    void handle(xcb_key_press_event_t * const e)
+    {
+    }
+
+    void handle(xcb_button_press_event_t * const e)
+    {
+      switch (e->response_type & ~0x80) {
+        case XCB_BUTTON_PRESS:
+          for (auto & handler : m_button_handler) {
+            handler->press(this, e);
+          }
+          break;
+
+        case XCB_BUTTON_RELEASE:
+          for (auto & handler : m_button_handler) {
+            handler->release(this, e);
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    client & insert(key::handler * const h)
+    {
+      m_key_handler.insert(h);
+      return *this;
+    }
+
+    client & remove(key::handler * const h)
+    {
+      m_key_handler.erase(h);
+      return *this;
+    }
+
+    client & insert(interface::button::handler * const h)
+    {
+      m_button_handler.insert(h);
+      return *this;
     }
 
     virtual int x(void)                       { return m_x; }
@@ -223,6 +281,9 @@ class client : public interface::client
   private:
     xevent::source & m_s;
 
+    event<xcb_key_press_event_t> * m_key_event_handler;
+    event<xcb_button_press_event_t> * m_button_event_handler;
+
     unsigned int m_mask = 0;
 
     int m_x = 0;
@@ -232,6 +293,10 @@ class client : public interface::client
     unsigned int m_border_width = 0;
     xcb_window_t m_sibling = 0;
     xcb_stack_mode_t m_stack_mode;
+
+    std::unordered_set<key::handler *> m_key_handler;
+    std::unordered_set<button::handler *> m_button_handler;
+
 }; // class client
 
 std::ostream & operator<<(std::ostream & os, const client & c)
