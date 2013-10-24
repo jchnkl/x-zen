@@ -156,8 +156,9 @@ class manager
             new iterator(m_clients, m_client_order.end())));
     }
 
-    manager(x::connection & c, xevent::source & s)
-      : m_c(c), m_s(s)
+    manager(x::connection & c, xevent::source & s,
+            interface::client::factory & client_factory)
+      : m_c(c), m_s(s), m_client_factory(client_factory)
     {
       s.insert(this);
     }
@@ -190,10 +191,7 @@ class manager
     insert(xcb_window_t window)
     {
       m_client_order.push_front(window);
-      m_clients[window] = client::ptr(
-          client::ptr(new wm_size_hints(
-                  client::ptr(new client(m_c, m_s, window)
-                    ))));
+      m_clients[window] = m_client_factory.make(window);
     }
 
     void
@@ -213,6 +211,7 @@ class manager
   private:
     x::connection & m_c;
     xevent::source & m_s;
+    interface::client::factory & m_client_factory;
 
     window_deque m_client_order;
     window_client_map m_clients;
