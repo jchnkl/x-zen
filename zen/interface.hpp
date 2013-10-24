@@ -10,6 +10,41 @@ namespace zen {
 
 namespace interface {
 
+class client;
+
+namespace key {
+
+class handler {
+  public:
+    virtual void press(client * const, xcb_key_press_event_t * const) = 0;
+    virtual void release(client * const, xcb_key_release_event_t * const) = 0;
+}; // class key
+
+}; // namespace key
+
+namespace button {
+
+class handler {
+  public:
+    virtual void press(client * const, xcb_button_press_event_t * const) = 0;
+    virtual void release(client * const, xcb_button_release_event_t * const) = 0;
+}; // class button
+
+}; // namespace button
+
+template<typename E>
+class handler {
+  public:
+    virtual void handle(E * const) = 0;
+}; // class handler
+
+template<typename E>
+class event {
+  public:
+    virtual void insert(handler<E> * h) = 0;
+    virtual void remove(handler<E> * h) = 0;
+}; // class event
+
 class client : public x::window {
   public:
     typedef std::shared_ptr<client> ptr;
@@ -295,19 +330,6 @@ class manager {
 
     virtual client::ptr operator[](const xcb_window_t &) = 0;
 };
-
-template<typename E>
-class handler {
-  public:
-    virtual void handle(client::ptr &, E * const) = 0;
-}; // class handler
-
-template<typename E>
-class event {
-  public:
-    virtual void insert(handler<E> * h) = 0;
-    virtual void remove(handler<E> * h) = 0;
-}; // class event
 
 }; // namespace interface
 
