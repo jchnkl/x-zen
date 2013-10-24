@@ -255,6 +255,16 @@ class client : public x::window {
       return m_client->remove(h);
     }
 
+    virtual client & focus(xcb_input_focus_t revert_to = XCB_INPUT_FOCUS_PARENT)
+    {
+      return m_client->focus(revert_to);
+    }
+
+    virtual client & raise(void)
+    {
+      return m_client->raise();
+    }
+
     virtual int x(void)
     {
       return m_client->x();
