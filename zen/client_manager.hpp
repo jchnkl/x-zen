@@ -187,6 +187,16 @@ class manager
       remove(e->window);
     }
 
+    client::ptr
+    operator[](const xcb_window_t & id)
+    {
+      try {
+        return m_clients.at(id);
+      } catch (...) {
+        return nullptr;
+      }
+    }
+
     void
     insert(xcb_window_t window)
     {
