@@ -33,6 +33,7 @@ class client : public x::window {
 
     friend std::ostream & operator<<(std::ostream &, client &);
 
+    // TODO: make factories stackable
     class factory {
       public:
         virtual ptr make(const xcb_window_t &) = 0;

@@ -68,6 +68,7 @@ class client : public interface::client
       m_s.remove(m_priority_masks, this);
     }
 
+    // TODO: this needs to be a decorator
     void
     handle(xcb_map_request_event_t * e)
     {
@@ -75,6 +76,7 @@ class client : public interface::client
       map();
     }
 
+    // TODO: this needs to be a decorator
     void
     handle(xcb_configure_request_event_t * e)
     {
@@ -109,6 +111,7 @@ class client : public interface::client
       window::configure(e->value_mask, values);
     }
 
+    // TODO: this needs to be a decorator
     void
     handle(xcb_enter_notify_event_t * e)
     {
@@ -121,6 +124,7 @@ class client : public interface::client
       }
     }
 
+    // TODO: this needs to be a decorator
     void
     handle(xcb_focus_in_event_t * e)
     {
