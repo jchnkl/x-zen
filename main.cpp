@@ -2,6 +2,7 @@
 #include "x/event.hpp"
 #include "x/cursor.hpp"
 #include "zen/event.hpp"
+#include "zen/client_factory.hpp"
 #include "zen/client_manager.hpp"
 #include "zen/pointer.hpp"
 
