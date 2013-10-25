@@ -180,14 +180,10 @@ class manager
       remove(e->window);
     }
 
-    client::ptr
+    client::ptr &
     operator[](const xcb_window_t & id)
     {
-      try {
-        return m_clients.at(id);
-      } catch (...) {
-        return nullptr;
-      }
+      return m_clients.at(id);
     }
 
     void

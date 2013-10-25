@@ -339,7 +339,7 @@ class manager {
     virtual client::ptr_iterator begin(void) = 0;
     virtual client::ptr_iterator end(void) = 0;
 
-    virtual client::ptr operator[](const xcb_window_t &) = 0;
+    virtual client::ptr & operator[](const xcb_window_t &) = 0;
 };
 
 }; // namespace interface

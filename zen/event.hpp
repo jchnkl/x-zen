@@ -38,10 +38,7 @@ class event : public x::interface::event::dispatcher
     handle(E * e)
     {
       try {
-        auto client = m_manager[get_window(e)];
-        if (client) {
-          client->dispatch(e);
-        }
+        m_manager[get_window(e)]->dispatch(e);
       } catch (...) {}
     }
 
