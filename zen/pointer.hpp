@@ -19,24 +19,26 @@ namespace pointer {
 using zen::interface::client;
 namespace event = x::interface::event;
 
-class resize : public event::dispatcher
+class resize : public interface::client
+             , public event::dispatcher
              , public event::sink<xcb_motion_notify_event_t>
+             , public zen::interface::handler<xcb_button_press_event_t>
              {
   public:
-    resize(x::connection & c, event::source & s, x::cursor & cursor)
-      : m_c(c), m_s(s), m_cursor(cursor)
+    resize(interface::client::ptr client,
+           x::connection & c, event::source & s, x::cursor & cursor)
+      : interface::client(client)
+      , m_c(c), m_s(s), m_cursor(cursor)
     {}
 
     void
-    press(client * const client, xcb_button_press_event_t * const e)
+    press(xcb_button_press_event_t * const e)
     {
       if (! (XCB_BUTTON_INDEX_3 == e->detail && XCB_MOD_MASK_4 == e->state)) {
         return;
       }
 
       using namespace algorithm;
-
-      m_client = client;
 
       auto reply = m_client->get_geometry();
 
@@ -111,10 +113,26 @@ class resize : public event::dispatcher
     }
 
     void
-    release(client * const client, xcb_button_press_event_t * const e)
+    release(xcb_button_press_event_t * const e)
     {
       m_c.ungrab_pointer(XCB_TIME_CURRENT_TIME);
       m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
+    }
+
+    void handle(xcb_button_press_event_t * const e)
+    {
+      switch (e->response_type & ~0x80) {
+        case XCB_BUTTON_PRESS:
+          press(e);
+          break;
+
+        case XCB_BUTTON_RELEASE:
+          release(e);
+          break;
+
+        default:
+          break;
+      }
     }
 
     void
@@ -122,12 +140,10 @@ class resize : public event::dispatcher
     {
       using namespace algorithm;
 
-      if (! (m_client && e->event == m_client->id())) return;
-
       switch (m_direction.first) {
         case TOP:
           m_client->y(e->root_y - m_pointer_y)
-                           .height(m_pointer_y - e->root_y);
+                   .height(m_pointer_y - e->root_y);
           break;
 
         case BOTTOM:
@@ -146,7 +162,7 @@ class resize : public event::dispatcher
 
         case LEFT:
           m_client->x(e->root_x - m_pointer_x )
-                           .width(m_pointer_x - e->root_x);
+                   .width(m_pointer_x - e->root_x);
 
           break;
 
@@ -166,29 +182,30 @@ class resize : public event::dispatcher
     event::source & m_s;
     x::cursor & m_cursor;
 
-    interface::client * m_client;
     std::pair<algorithm::direction, algorithm::direction> m_direction;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
 
 }; // class resize
 
-class move : public event::dispatcher
+class move : public interface::client
+           , public event::dispatcher
            , public event::sink<xcb_motion_notify_event_t>
+           , public zen::interface::handler<xcb_button_press_event_t>
            {
   public:
-    move(x::connection & c, event::source & s, x::cursor & cursor)
-      : m_c(c), m_s(s), m_cursor(cursor)
+    move(interface::client::ptr client,
+         x::connection & c, event::source & s, x::cursor & cursor)
+      : interface::client(client)
+      , m_c(c), m_s(s), m_cursor(cursor)
     {}
 
     void
-    press(client * const client, xcb_button_press_event_t * const e)
+    press(xcb_button_press_event_t * const e)
     {
       if (! (XCB_BUTTON_INDEX_1 == e->detail && XCB_MOD_MASK_4 == e->state)) {
         return;
       }
-
-      m_client = client;
 
       m_pointer_x = e->root_x;
       m_pointer_y = e->root_y;
@@ -203,17 +220,31 @@ class move : public event::dispatcher
     }
 
     void
-    release(client * const client, xcb_button_release_event_t * const e)
+    release(xcb_button_release_event_t * const e)
     {
       m_c.ungrab_pointer();
       m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
     }
 
+    void handle(xcb_button_press_event_t * const e)
+    {
+      switch (e->response_type & ~0x80) {
+        case XCB_BUTTON_PRESS:
+          press(e);
+          break;
+
+        case XCB_BUTTON_RELEASE:
+          release(e);
+          break;
+
+        default:
+          break;
+      }
+    }
+
     void
     handle(xcb_motion_notify_event_t * e)
     {
-      if (! (m_client && e->event == m_client->id())) return;
-
       m_client->x(e->root_x - m_pointer_x)
                .y(e->root_y - m_pointer_y)
                .configure();
@@ -227,9 +258,9 @@ class move : public event::dispatcher
     event::source & m_s;
     x::cursor & m_cursor;
 
-    interface::client * m_client;
     unsigned int m_pointer_x;
     unsigned int m_pointer_y;
+
 }; // class move
 
 }; // namespace pointer
