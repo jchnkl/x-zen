@@ -226,7 +226,6 @@ class manager
 
 }; // class client_manager
 
-
 }; // namespace client
 
 }; // namespace zen
