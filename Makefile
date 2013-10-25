@@ -33,6 +33,10 @@ EXE=x:zen
 all: ${HPPOBJS} ${CPPOBJS}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} ${CPPOBJS} -o ${EXE}
 
+debug: CXXFLAGS+=-g -D_GLIBCXX_DEBUG
+debug: OPTLEVEL=0
+debug: all
+
 %.hpp.gch: %.hpp
 	rm -f $(<:%.hpp=%.o)
 	${CXX} ${CXXFLAGS} -c $<
