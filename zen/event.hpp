@@ -38,8 +38,10 @@ class event : public x::interface::event::dispatcher
     handle(E * e)
     {
       try {
-        using zen::interface::handler;
-        dynamic_cast<handler<E> &>(*m_manager[get_window(e)]).handle(e);
+        auto client = m_manager[get_window(e)];
+        if (client) {
+          client->dispatch(e);
+        }
       } catch (...) {}
     }
 
