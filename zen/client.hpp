@@ -24,8 +24,6 @@ class client : public interface::client
              , public xevent::sink<xcb_focus_in_event_t>
              , public xevent::sink<xcb_map_request_event_t>
              , public xevent::sink<xcb_configure_request_event_t>
-             , public zen::interface::handler<xcb_key_press_event_t>
-             , public zen::interface::handler<xcb_button_press_event_t>
              {
   public:
     friend std::ostream & operator<<(std::ostream &, const client &);
@@ -40,9 +38,7 @@ class client : public interface::client
       if (! reply->override_redirect) {
         change_attributes(XCB_CW_BORDER_PIXEL | XCB_CW_EVENT_MASK,
                           { 0x000000ff
-                          , XCB_EVENT_MASK_KEY_PRESS
-                          | XCB_EVENT_MASK_KEY_RELEASE
-                          | XCB_EVENT_MASK_ENTER_WINDOW
+                          , XCB_EVENT_MASK_ENTER_WINDOW
                           | XCB_EVENT_MASK_LEAVE_WINDOW
                           | XCB_EVENT_MASK_FOCUS_CHANGE
                           });
@@ -135,30 +131,6 @@ class client : public interface::client
         change_attributes(XCB_CW_BORDER_PIXEL, { 0x00ff0000 });
       } else { // XCB_FOCUS_OUT
         change_attributes(XCB_CW_BORDER_PIXEL, { 0x000000ff });
-      }
-    }
-
-    void handle(xcb_key_press_event_t * const e)
-    {
-    }
-
-    void handle(xcb_button_press_event_t * const e)
-    {
-      switch (e->response_type & ~0x80) {
-        case XCB_BUTTON_PRESS:
-          for (auto & handler : m_button_handler) {
-            handler->press(this, e);
-          }
-          break;
-
-        case XCB_BUTTON_RELEASE:
-          for (auto & handler : m_button_handler) {
-            handler->release(this, e);
-          }
-          break;
-
-        default:
-          break;
       }
     }
 
