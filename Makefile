@@ -1,4 +1,4 @@
-LIBS=xcb xcb-keysyms
+LIBS=xcb xcb-keysyms xcb-icccm
 CXXFLAGS=-std=c++11 -Wall -O0 -g \
 				 $(shell pkg-config --cflags ${LIBS})
 LDFLAGS=$(shell pkg-config --libs ${LIBS})
