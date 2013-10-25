@@ -40,7 +40,7 @@ class client : public interface::client
       , m_key_event_handler(key_event_handler)
       , m_button_event_handler(button_event_handler)
     {
-      s.insert(this);
+      m_s.insert(m_priority_masks, this);
       m_key_event_handler->insert(this);
       m_button_event_handler->insert(this);
 
@@ -77,21 +77,9 @@ class client : public interface::client
 
     ~client(void)
     {
-      m_s.remove(this);
+      m_s.remove(m_priority_masks, this);
       m_key_event_handler->remove(this);
       m_button_event_handler->remove(this);
-    }
-
-    priority_masks
-    masks(void)
-    {
-      return { { UINT_MAX, XCB_CONFIGURE_REQUEST }
-             , { UINT_MAX, XCB_MAP_REQUEST }
-             , { UINT_MAX, XCB_ENTER_NOTIFY }
-             , { UINT_MAX, XCB_LEAVE_NOTIFY }
-             , { UINT_MAX, XCB_FOCUS_IN }
-             , { UINT_MAX, XCB_FOCUS_OUT }
-             };
     }
 
     void
@@ -292,6 +280,17 @@ class client : public interface::client
 
   private:
     xevent::source & m_s;
+
+    priority_masks m_priority_masks =
+      { { UINT_MAX, XCB_CONFIGURE_REQUEST }
+      , { UINT_MAX, XCB_CONFIGURE_REQUEST }
+      , { UINT_MAX, XCB_MAP_REQUEST }
+      , { UINT_MAX, XCB_ENTER_NOTIFY }
+      , { UINT_MAX, XCB_LEAVE_NOTIFY }
+      , { UINT_MAX, XCB_FOCUS_IN }
+      , { UINT_MAX, XCB_FOCUS_OUT }
+      };
+
 
     event<xcb_key_press_event_t> * m_key_event_handler;
     event<xcb_button_press_event_t> * m_button_event_handler;

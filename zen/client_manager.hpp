@@ -160,19 +160,12 @@ class manager
             interface::client::factory & client_factory)
       : m_c(c), m_s(s), m_client_factory(client_factory)
     {
-      s.insert(this);
+      s.insert(m_priority_masks, this);
     }
 
     ~manager(void)
     {
-      m_s.remove(this);
-    }
-
-    priority_masks
-    masks(void)
-    {
-      return { { UINT_MAX, XCB_CREATE_NOTIFY }
-             , { UINT_MAX, XCB_DESTROY_NOTIFY } };
+      m_s.remove(m_priority_masks, this);
     }
 
     void
@@ -225,6 +218,12 @@ class manager
 
     window_deque m_client_order;
     window_client_map m_clients;
+
+    priority_masks m_priority_masks =
+      { { UINT_MAX, XCB_CREATE_NOTIFY }
+      , { UINT_MAX, XCB_DESTROY_NOTIFY }
+      };
+
 }; // class client_manager
 
 
