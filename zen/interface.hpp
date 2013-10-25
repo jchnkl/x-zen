@@ -24,8 +24,7 @@ class handler {
 template<typename E>
 class event {
   public:
-    virtual void insert(handler<E> * h) = 0;
-    virtual void remove(handler<E> * h) = 0;
+    virtual ~event(void) {}
 }; // class event
 
 class client : public x::window {

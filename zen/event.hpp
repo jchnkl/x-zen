@@ -35,16 +35,6 @@ class event : public x::interface::event::dispatcher
     }
 
     void
-    insert(zen::interface::handler<E> * h) {
-      handlers.insert(h);
-    }
-
-    void
-    remove(zen::interface::handler<E> * h) {
-      handlers.erase(h);
-    }
-
-    void
     handle(E * e)
     {
       try {
@@ -57,7 +47,6 @@ class event : public x::interface::event::dispatcher
     priority_masks m_masks;
     zen::interface::manager & m_manager;
     x::interface::event::source & m_s;
-    std::unordered_set<zen::interface::handler<E> *> handlers;
 
 }; // class event
 
