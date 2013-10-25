@@ -221,7 +221,6 @@ class client : public interface::client
 
     priority_masks m_priority_masks =
       { { UINT_MAX, XCB_CONFIGURE_REQUEST }
-      , { UINT_MAX, XCB_CONFIGURE_REQUEST }
       , { UINT_MAX, XCB_MAP_REQUEST }
       , { UINT_MAX, XCB_ENTER_NOTIFY }
       , { UINT_MAX, XCB_LEAVE_NOTIFY }
