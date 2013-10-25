@@ -5,7 +5,8 @@ LDFLAGS=$(shell pkg-config --libs ${LIBS})
 
 CPPSRCS=main.cpp
 
-HPPSRCS=x/event.hpp \
+HPPSRCS=generic_accessor.hpp \
+				x/event.hpp \
 				x/cursor.hpp \
 				x/request.hpp \
 				x/requests.hpp \
@@ -14,8 +15,12 @@ HPPSRCS=x/event.hpp \
 				x/drawable.hpp \
 				x/window.hpp \
 				zen/interface.hpp \
+				zen/algorithm.hpp \
+				zen/event.hpp \
 				zen/pointer.hpp \
 				zen/client.hpp \
+				zen/client_snap.hpp \
+				zen/client_wm_size_hints.hpp \
 				zen/client_manager.hpp
 
 CPPOBJS=$(CPPSRCS:%.cpp=%.o)
