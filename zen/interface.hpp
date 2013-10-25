@@ -222,6 +222,19 @@ class client : public x::window {
 
     virtual ~client(void) {}
 
+    template<typename E>
+    client & dispatch(E * e)
+    {
+      try {
+        dynamic_cast<handler<E> &>(*this).handle(e);
+      } catch (...) {}
+
+      if (m_client) {
+        return m_client->dispatch(e);
+      } else {
+        return *this;
+      }
+    }
 
     virtual client & focus(xcb_input_focus_t revert_to = XCB_INPUT_FOCUS_PARENT)
     {
