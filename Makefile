@@ -32,7 +32,7 @@ all: ${HPPOBJS} ${CPPOBJS}
 	${CXX} ${CXXFLAGS} ${LDFLAGS} ${CPPOBJS} -o ${EXE}
 
 %.hpp.gch: %.hpp
-	rm -f ${CPPOBJS}
+	rm -f $(<:%.hpp=%.o)
 	${CXX} ${CXXFLAGS} -c $<
 
 clean:
