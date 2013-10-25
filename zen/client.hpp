@@ -16,8 +16,6 @@ namespace zen {
 namespace client {
 
 using zen::interface::event;
-namespace key = zen::interface::key;
-namespace button = zen::interface::button;
 namespace xevent = x::interface::event;
 
 class client : public interface::client
@@ -33,16 +31,10 @@ class client : public interface::client
     friend std::ostream & operator<<(std::ostream &, const client &);
 
     client(x::connection & c, xevent::source & s,
-           event<xcb_key_press_event_t> * key_event_handler,
-           event<xcb_button_press_event_t> * button_event_handler,
            const xcb_window_t & w)
       : interface::client(c, w), m_s(s)
-      , m_key_event_handler(key_event_handler)
-      , m_button_event_handler(button_event_handler)
     {
       m_s.insert(m_priority_masks, this);
-      m_key_event_handler->insert(this);
-      m_button_event_handler->insert(this);
 
       auto reply = get_attributes();
       if (! reply->override_redirect) {
@@ -78,8 +70,6 @@ class client : public interface::client
     ~client(void)
     {
       m_s.remove(m_priority_masks, this);
-      m_key_event_handler->remove(this);
-      m_button_event_handler->remove(this);
     }
 
     void
@@ -170,30 +160,6 @@ class client : public interface::client
         default:
           break;
       }
-    }
-
-    client & insert(key::handler * const h)
-    {
-      m_key_handler.insert(h);
-      return *this;
-    }
-
-    client & remove(key::handler * const h)
-    {
-      m_key_handler.erase(h);
-      return *this;
-    }
-
-    client & insert(interface::button::handler * const h)
-    {
-      m_button_handler.insert(h);
-      return *this;
-    }
-
-    client & remove(interface::button::handler * const h)
-    {
-      m_button_handler.erase(h);
-      return *this;
     }
 
     client & focus(xcb_input_focus_t revert_to = XCB_INPUT_FOCUS_PARENT)
@@ -291,10 +257,6 @@ class client : public interface::client
       , { UINT_MAX, XCB_FOCUS_OUT }
       };
 
-
-    event<xcb_key_press_event_t> * m_key_event_handler;
-    event<xcb_button_press_event_t> * m_button_event_handler;
-
     unsigned int m_mask = 0;
 
     int m_x = 0;
@@ -304,9 +266,6 @@ class client : public interface::client
     unsigned int m_border_width = 0;
     xcb_window_t m_sibling = 0;
     xcb_stack_mode_t m_stack_mode;
-
-    std::unordered_set<key::handler *> m_key_handler;
-    std::unordered_set<button::handler *> m_button_handler;
 
 }; // class client
 

@@ -1,36 +1,19 @@
 #ifndef ZEN_INTERFACE_HPP
 #define ZEN_INTERFACE_HPP
 
+#include <climits>
 #include <iostream>
 #include <memory>
+#include <iterator>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "../x/window.hpp"
+#include "../x/interface.hpp"
 
 namespace zen {
 
 namespace interface {
-
-class client;
-
-namespace key {
-
-class handler {
-  public:
-    virtual void press(client * const, xcb_key_press_event_t * const) = 0;
-    virtual void release(client * const, xcb_key_release_event_t * const) = 0;
-}; // class key
-
-}; // namespace key
-
-namespace button {
-
-class handler {
-  public:
-    virtual void press(client * const, xcb_button_press_event_t * const) = 0;
-    virtual void release(client * const, xcb_button_release_event_t * const) = 0;
-}; // class button
-
-}; // namespace button
 
 template<typename E>
 class handler {
@@ -240,25 +223,6 @@ class client : public x::window {
 
     virtual ~client(void) {}
 
-    virtual client & insert(key::handler * const h)
-    {
-      return m_client->insert(h);
-    }
-
-    virtual client & remove(key::handler * const h)
-    {
-      return m_client->remove(h);
-    }
-
-    virtual client & insert(button::handler * const h)
-    {
-      return m_client->insert(h);
-    }
-
-    virtual client & remove(button::handler * const h)
-    {
-      return m_client->remove(h);
-    }
 
     virtual client & focus(xcb_input_focus_t revert_to = XCB_INPUT_FOCUS_PARENT)
     {

@@ -34,8 +34,6 @@ int main(int argc, char ** argv)
 
   zen::pointer::resize resize(c, source, cursor);
 
-  client_factory.key_event_handler(&key_event_handler);
-  client_factory.button_event_handler(&button_event_handler);
   client_factory.insert(&move);
   client_factory.insert(&resize);
 

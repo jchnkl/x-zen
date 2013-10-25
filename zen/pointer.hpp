@@ -21,7 +21,6 @@ namespace event = x::interface::event;
 
 class resize : public event::dispatcher
              , public event::sink<xcb_motion_notify_event_t>
-             , public interface::button::handler
              {
   public:
     resize(x::connection & c, event::source & s, x::cursor & cursor)
@@ -176,7 +175,6 @@ class resize : public event::dispatcher
 
 class move : public event::dispatcher
            , public event::sink<xcb_motion_notify_event_t>
-           , public interface::button::handler
            {
   public:
     move(x::connection & c, event::source & s, x::cursor & cursor)
