@@ -328,10 +328,7 @@ class client : public x::window {
 }; // class client
 
 std::ostream &
-operator<<(std::ostream & os, client & c)
-{
-  return os << c.id();
-}
+operator<<(std::ostream &, client &);
 
 class manager {
   public:
