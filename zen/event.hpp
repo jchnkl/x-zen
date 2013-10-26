@@ -34,7 +34,6 @@ class event : public x::interface::event::dispatcher
       m_s.remove(m_masks, this);
     }
 
-    // TODO: template magic to resolve button/key automatically
     void
     handle(E * e)
     {
