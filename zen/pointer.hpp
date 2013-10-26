@@ -17,16 +17,16 @@ namespace zen {
 namespace pointer {
 
 using zen::interface::client;
-namespace event = x::interface::event;
+namespace xevent = x::interface::event;
 
 class resize : public interface::client
-             , public event::dispatcher
-             , public event::sink<xcb_motion_notify_event_t>
+             , public xevent::dispatcher
+             , public xevent::sink<xcb_motion_notify_event_t>
              , public zen::interface::handler<xcb_button_press_event_t>
              {
   public:
     resize(interface::client::ptr client,
-           x::connection & c, event::source & s, x::cursor & cursor)
+           x::connection & c, xevent::source & s, x::cursor & cursor)
       : interface::client(client)
       , m_c(c), m_s(s), m_cursor(cursor)
     {}
@@ -179,7 +179,7 @@ class resize : public interface::client
 
   private:
     x::connection & m_c;
-    event::source & m_s;
+    xevent::source & m_s;
     x::cursor & m_cursor;
 
     std::pair<algorithm::direction, algorithm::direction> m_direction;
@@ -189,13 +189,13 @@ class resize : public interface::client
 }; // class resize
 
 class move : public interface::client
-           , public event::dispatcher
-           , public event::sink<xcb_motion_notify_event_t>
+           , public xevent::dispatcher
+           , public xevent::sink<xcb_motion_notify_event_t>
            , public zen::interface::handler<xcb_button_press_event_t>
            {
   public:
     move(interface::client::ptr client,
-         x::connection & c, event::source & s, x::cursor & cursor)
+         x::connection & c, xevent::source & s, x::cursor & cursor)
       : interface::client(client)
       , m_c(c), m_s(s), m_cursor(cursor)
     {}
@@ -255,7 +255,7 @@ class move : public interface::client
 
   private:
     x::connection & m_c;
-    event::source & m_s;
+    xevent::source & m_s;
     x::cursor & m_cursor;
 
     unsigned int m_pointer_x;
