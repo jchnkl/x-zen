@@ -26,8 +26,6 @@ class client : public interface::client
              , public xevent::sink<xcb_configure_request_event_t>
              {
   public:
-    friend std::ostream & operator<<(std::ostream &, const client &);
-
     client(x::connection & c, xevent::source & s,
            const xcb_window_t & w)
       : interface::client(c, w), m_s(s)
@@ -243,11 +241,6 @@ class client : public interface::client
     xcb_stack_mode_t m_stack_mode;
 
 }; // class client
-
-std::ostream & operator<<(std::ostream & os, const client & c)
-{
-  return os << c.id();
-}
 
 }; // namespace client
 
