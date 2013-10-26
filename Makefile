@@ -5,7 +5,23 @@ LDFLAGS=$(shell pkg-config --libs ${LIBS})
 
 OPTLEVEL=3
 
-CPPSRCS=main.cpp
+CPPSRCS=main.cpp \
+				x/connection.cpp \
+				x/cursor.cpp \
+				x/drawable.cpp \
+				x/event.cpp \
+				x/interface.cpp \
+				x/request.cpp \
+				x/requests.cpp \
+				x/window.cpp \
+				zen/algorithm.cpp \
+				zen/client.cpp \
+				zen/client_factory.cpp \
+				zen/client_manager.cpp \
+				zen/client_wm_size_hints.cpp \
+				zen/event.cpp \
+				zen/interface.cpp \
+				zen/pointer.cpp
 
 HPPSRCS=generic_accessor.hpp \
 				x/event.hpp \
