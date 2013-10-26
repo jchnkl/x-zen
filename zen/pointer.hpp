@@ -17,12 +17,13 @@ namespace zen {
 namespace pointer {
 
 using zen::interface::client;
+namespace button = zen::interface::button;
 namespace xevent = x::interface::event;
 
 class resize : public interface::client
              , public xevent::dispatcher
              , public xevent::sink<xcb_motion_notify_event_t>
-             , public zen::interface::handler<xcb_button_press_event_t>
+             , public button::handler<XCB_BUTTON_INDEX_3, XCB_MOD_MASK_4>
              {
   public:
     resize(interface::client::ptr client,
@@ -34,10 +35,6 @@ class resize : public interface::client
     void
     press(xcb_button_press_event_t * const e)
     {
-      if (! (XCB_BUTTON_INDEX_3 == e->detail && XCB_MOD_MASK_4 == e->state)) {
-        return;
-      }
-
       using namespace algorithm;
 
       auto reply = m_client->get_geometry();
@@ -119,22 +116,6 @@ class resize : public interface::client
       m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
     }
 
-    void handle(xcb_button_press_event_t * const e)
-    {
-      switch (e->response_type & ~0x80) {
-        case XCB_BUTTON_PRESS:
-          press(e);
-          break;
-
-        case XCB_BUTTON_RELEASE:
-          release(e);
-          break;
-
-        default:
-          break;
-      }
-    }
-
     void
     handle(xcb_motion_notify_event_t * e)
     {
@@ -191,7 +172,7 @@ class resize : public interface::client
 class move : public interface::client
            , public xevent::dispatcher
            , public xevent::sink<xcb_motion_notify_event_t>
-           , public zen::interface::handler<xcb_button_press_event_t>
+           , public button::handler<XCB_BUTTON_INDEX_1, XCB_MOD_MASK_4>
            {
   public:
     move(interface::client::ptr client,
@@ -203,10 +184,6 @@ class move : public interface::client
     void
     press(xcb_button_press_event_t * const e)
     {
-      if (! (XCB_BUTTON_INDEX_1 == e->detail && XCB_MOD_MASK_4 == e->state)) {
-        return;
-      }
-
       m_pointer_x = e->root_x;
       m_pointer_y = e->root_y;
 
@@ -224,22 +201,6 @@ class move : public interface::client
     {
       m_c.ungrab_pointer();
       m_s.remove({{ 0, XCB_MOTION_NOTIFY }}, this);
-    }
-
-    void handle(xcb_button_press_event_t * const e)
-    {
-      switch (e->response_type & ~0x80) {
-        case XCB_BUTTON_PRESS:
-          press(e);
-          break;
-
-        case XCB_BUTTON_RELEASE:
-          release(e);
-          break;
-
-        default:
-          break;
-      }
     }
 
     void
