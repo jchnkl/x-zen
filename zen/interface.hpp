@@ -24,12 +24,12 @@ class handler {
 namespace button {
 
 template<xcb_button_t BUTTON, uint16_t MODMASK = 0>
-class handler : interface::handler<xcb_button_press_event_t> {
+class handler : public interface::handler<xcb_button_press_event_t> {
   public:
     virtual void press(xcb_button_press_event_t * const) = 0;
     virtual void release(xcb_button_release_event_t * const) = 0;
 
-    void handle(xcb_button_press_event_t * e)
+    virtual void handle(xcb_button_press_event_t * const e)
     {
       if (e->detail == BUTTON && e->state == MODMASK) {
         switch (e->response_type & ~0x80) {
