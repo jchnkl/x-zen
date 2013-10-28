@@ -190,7 +190,7 @@ class manager
     insert(xcb_window_t window)
     {
       m_client_order.push_front(window);
-      m_clients[window] = m_client_factory.make(window);
+      m_clients[window] = m_client_factory.generate(window);
     }
 
     void
