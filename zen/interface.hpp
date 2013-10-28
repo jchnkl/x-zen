@@ -73,10 +73,29 @@ class client : public x::window {
 
     friend std::ostream & operator<<(std::ostream &, client &);
 
-    // TODO: make factories stackable
     class factory {
       public:
-        virtual ptr make(const xcb_window_t &) = 0;
+        factory(void) {}
+
+        factory(factory * const factory_ptr) : m_factory(factory_ptr) {}
+
+        virtual ~factory(void) {}
+
+        virtual client::ptr
+          make(const xcb_window_t &, const client::ptr & c = nullptr) = 0;
+
+        client::ptr generate(const xcb_window_t & window)
+        {
+          if (m_factory) {
+            return make(window, m_factory->generate(window));
+          } else {
+            return make(window);
+          }
+        }
+
+      private:
+        factory * m_factory = nullptr;
+
     }; // class factory
 
     class iterator
