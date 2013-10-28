@@ -18,16 +18,17 @@ int main(int argc, char ** argv)
 
   x::cursor cursor(c);
 
-  zen::client::factory client_factory(c, source, cursor);
+  zen::interface::client::factory * factory;
+  factory = new zen::client::factory(c, source);
+  factory = new zen::pointer::move::factory(factory, c, source, cursor);
+  factory = new zen::pointer::resize::factory(factory, c, source, cursor);
 
-  zen::client::manager client_manager(c, source, client_factory);
+  zen::client::manager client_manager(c, source, *factory);
 
 
   zen::event::event<xcb_button_press_event_t>
     button_event_handler(client_manager, source,
                          { XCB_BUTTON_PRESS, XCB_BUTTON_RELEASE });
-
-
 
   for (auto & window : c.query_tree(c.root())) {
     client_manager.insert(window);
