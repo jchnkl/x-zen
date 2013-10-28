@@ -31,7 +31,7 @@ class handler : public interface::handler<xcb_button_press_event_t> {
 
     virtual void handle(xcb_button_press_event_t * const e)
     {
-      if (e->detail == BUTTON && e->state == MODMASK) {
+      if (BUTTON == e->detail && (e->state & ~m_button_mask) == MODMASK) {
         switch (e->response_type & ~0x80) {
           case XCB_BUTTON_PRESS:
             press(e);
@@ -46,6 +46,17 @@ class handler : public interface::handler<xcb_button_press_event_t> {
         }
       }
     }
+
+  private:
+    const uint16_t m_button_mask =
+      XCB_BUTTON_MASK_1
+      | XCB_BUTTON_MASK_2
+      | XCB_BUTTON_MASK_3
+      | XCB_BUTTON_MASK_4
+      | XCB_BUTTON_MASK_5
+      ;
+
+    int numlockmask;
 };
 
 };
