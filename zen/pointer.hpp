@@ -26,6 +26,27 @@ class resize : public interface::client
              , public button::handler<XCB_BUTTON_INDEX_3, XCB_MOD_MASK_4>
              {
   public:
+    class factory : public zen::interface::client::factory {
+      public:
+        factory(zen::interface::client::factory * const factory_ptr,
+                x::connection & c, xevent::source & s, x::cursor & cursor)
+          : zen::interface::client::factory(factory_ptr)
+          , m_c(c), m_s(s), m_cursor(cursor)
+        {}
+
+        client::ptr
+        make(const xcb_window_t & window, const client::ptr & c)
+        {
+          return std::shared_ptr<client>(new resize(c, m_c, m_s, m_cursor));
+        }
+
+      private:
+        x::connection & m_c;
+        xevent::source & m_s;
+        x::cursor & m_cursor;
+
+    }; // class factory
+
     resize(interface::client::ptr client,
            x::connection & c, xevent::source & s, x::cursor & cursor)
       : interface::client(client)
@@ -175,6 +196,27 @@ class move : public interface::client
            , public button::handler<XCB_BUTTON_INDEX_1, XCB_MOD_MASK_4>
            {
   public:
+    class factory : public zen::interface::client::factory {
+      public:
+        factory(zen::interface::client::factory * const factory_ptr,
+                x::connection & c, xevent::source & s, x::cursor & cursor)
+          : zen::interface::client::factory(factory_ptr)
+          , m_c(c), m_s(s), m_cursor(cursor)
+        {}
+
+        client::ptr
+        make(const xcb_window_t & window, const client::ptr & c)
+        {
+          return std::shared_ptr<client>(new move(c, m_c, m_s, m_cursor));
+        }
+
+      private:
+        x::connection & m_c;
+        xevent::source & m_s;
+        x::cursor & m_cursor;
+
+    }; // class factory
+
     move(interface::client::ptr client,
          x::connection & c, xevent::source & s, x::cursor & cursor)
       : interface::client(client)
