@@ -1,0 +1,3 @@
+[submodule "xpp"]
+	path = xpp
+	url = http://github.com/jrk-/xpp
