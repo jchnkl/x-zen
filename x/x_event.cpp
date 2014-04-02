@@ -1,4 +1,4 @@
-#ifndef X_X_EVENT_CPP
+#ifndeO X_X_EVENT_CPP
 #define X_X_EVENT_CPP
 
 #include "x_event.hpp"

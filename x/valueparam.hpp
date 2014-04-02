@@ -6,6 +6,29 @@
 
 namespace x {
 
+template<typename ... ARGS>
+class foo {
+  public:
+    foo(ARGS ... args)
+    {
+      append(args ...);
+      // m_mask |= ARGS ... args;
+      for (int i = 0; i < sizeof...(ARGS); ++i) {
+      }
+    }
+
+    template<typename T, typename ... TS>
+    void append(T value, TS ... vs)
+    {
+      m_mask |= value;
+    }
+
+  private:
+    uint32_t m_mask = 0;
+    uint32_t m_values[(sizeof...(ARGS))];
+    // std::vector<uint32_t> m_values; // (sizeof...(ARGS));
+};
+
 class valueparam {
   public:
     valueparam &

@@ -11,6 +11,20 @@ namespace client {
 
 class wm_size_hints : public interface::client {
   public:
+    class factory : public zen::interface::client::factory {
+      public:
+        // using zen::interface::client::factory::factory;
+        factory(zen::interface::client::factory * const factory_ptr)
+          : zen::interface::client::factory(factory_ptr)
+        {}
+
+        client::ptr
+        make(const xcb_window_t & window, const client::ptr & c)
+        {
+          return std::shared_ptr<client>(new wm_size_hints(c));
+        }
+    }; // class factory
+
     wm_size_hints(interface::client::ptr client) : interface::client(client)
     {
       auto reply = m_c.get_property(false, m_window, XCB_ATOM_WM_NORMAL_HINTS,

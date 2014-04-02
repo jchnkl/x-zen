@@ -10,7 +10,6 @@
 #include "../x/interface.hpp"
 #include "../zen/algorithm.hpp"
 #include "../zen/interface.hpp"
-#include "../zen/client_wm_size_hints.hpp"
 
 namespace zen {
 

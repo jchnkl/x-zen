@@ -24,11 +24,21 @@ class client : public interface::client
              , public xevent::sink<xcb_focus_in_event_t>
              , public xevent::sink<xcb_map_request_event_t>
              , public xevent::sink<xcb_configure_request_event_t>
+             , public interface::client_event<
+               interface::handler<xcb_motion_notify_event_t>,
+               interface::button::handler<XCB_BUTTON_INDEX_1, XCB_MOD_MASK_4>,
+               interface::button::handler<XCB_BUTTON_INDEX_3, XCB_MOD_MASK_4>
+               >
              {
   public:
     client(x::connection & c, xevent::source & s,
            const xcb_window_t & w)
       : interface::client(c, w), m_s(s)
+      , interface::client_event<
+          interface::handler<xcb_motion_notify_event_t>,
+          interface::button::handler<XCB_BUTTON_INDEX_1, XCB_MOD_MASK_4>,
+          interface::button::handler<XCB_BUTTON_INDEX_3, XCB_MOD_MASK_4>
+        >(s)
     {
       m_s.insert(m_priority_masks, this);
 

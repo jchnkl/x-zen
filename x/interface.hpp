@@ -6,11 +6,55 @@
 
 #define MAX_PRIORITY UINT32_MAX
 
+#define EVENT(NAMESPACE, CLASS, TYPE, STRUCT) \
+namespace NAMESPACE {                                                         \
+  struct CLASS {                                                              \
+    STRUCT * const operator*(void) { return event; }                          \
+    STRUCT * const operator->(void) { return event; }                         \
+    const int type = TYPE;                                                    \
+    STRUCT * event;                                                           \
+  };                                                                          \
+};
+
 namespace x {
 
 namespace interface {
 
 namespace event {
+
+// EVENT(key,        press,    XCB_KEY_PRESS,         xcb_key_press_event_t)
+// EVENT(key,        release,  XCB_KEY_RELEASE,       xcb_key_release_event_t)
+// EVENT(button,     press,    XCB_BUTTON_PRESS,      xcb_button_press_event_t)
+// EVENT(button,     release,  XCB_BUTTON_RELEASE,    xcb_button_release_event_t)
+// EVENT(motion,     notify,   XCB_MOTION_NOTIFY,     xcb_motion_notify_event_t)
+// EVENT(enter,      notify,   XCB_ENTER_NOTIFY,      xcb_enter_notify_event_t)
+// EVENT(leave,      notify,   XCB_LEAVE_NOTIFY,      xcb_leave_notify_event_t)
+// EVENT(focus,      in,       XCB_FOCUS_IN,          xcb_focus_in_event_t)
+// EVENT(focus,      out,      XCB_FOCUS_OUT,         xcb_focus_out_event_t)
+// EVENT(keymap,     notify,   XCB_KEYMAP_NOTIFY,     xcb_keymap_notify_event_t)
+// EVENT(expose,     event,    XCB_EXPOSE,            xcb_expose_event_t)
+// EVENT(graphics,   exposure, XCB_GRAPHICS_EXPOSURE, xcb_graphics_exposure_event_t)
+// EVENT(no,         exposure, XCB_NO_EXPOSURE,       xcb_no_exposure_event_t)
+// EVENT(visibility, notify,   XCB_VISIBILITY_NOTIFY, xcb_visibility_notify_event_t)
+// EVENT(create,     notify,   XCB_CREATE_NOTIFY,     xcb_create_notify_event_t)
+// EVENT(destroy,    notify,   XCB_DESTROY_NOTIFY,    xcb_destroy_notify_event_t)
+// EVENT(unmap,      notify,   XCB_UNMAP_NOTIFY,      xcb_unmap_notify_event_t)
+// EVENT(map,        notify,   XCB_MAP_NOTIFY,        xcb_map_notify_event_t)
+// EVENT(map,        request,  XCB_MAP_REQUEST,       xcb_map_request_event_t)
+// EVENT(reparent,   notify,   XCB_REPARENT_NOTIFY,   xcb_reparent_notify_event_t)
+// EVENT(configure,  notify,   XCB_CONFIGURE_NOTIFY,  xcb_configure_notify_event_t)
+// EVENT(configure,  request,  XCB_CONFIGURE_REQUEST, xcb_configure_request_event_t)
+// EVENT(gravity,    notify,   XCB_GRAVITY_NOTIFY,    xcb_gravity_notify_event_t)
+// EVENT(resize,     request,  XCB_RESIZE_REQUEST,    xcb_resize_request_event_t)
+// EVENT(circulate,  notify,   XCB_CIRCULATE_NOTIFY,  xcb_circulate_notify_event_t)
+// EVENT(circulate,  request,  XCB_CIRCULATE_REQUEST, xcb_circulate_request_event_t)
+// EVENT(property,   notify,   XCB_PROPERTY_NOTIFY,   xcb_property_notify_event_t)
+// EVENT(selection,  clear,    XCB_SELECTION_CLEAR,   xcb_selection_clear_event_t)
+// EVENT(selection,  request,  XCB_SELECTION_REQUEST, xcb_selection_request_event_t)
+// EVENT(selection,  notify,   XCB_SELECTION_NOTIFY,  xcb_selection_notify_event_t)
+// EVENT(colormap,   notify,   XCB_COLORMAP_NOTIFY,   xcb_colormap_notify_event_t)
+// EVENT(client,     message,  XCB_CLIENT_MESSAGE,    xcb_client_message_event_t)
+// EVENT(mapping,    notify,   XCB_MAPPING_NOTIFY,    xcb_mapping_notify_event_t)
 
 typedef std::vector<std::pair<unsigned int, int>> priorities;
 

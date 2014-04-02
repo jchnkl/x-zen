@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <iterator>
+#include <deque>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -15,57 +16,19 @@ namespace zen {
 
 namespace interface {
 
-template<typename E>
-class handler {
-  public:
-    virtual void handle(E * const) = 0;
-}; // class handler
+class client;
 
-namespace button {
-
-template<xcb_button_t BUTTON, uint16_t MODMASK = 0>
-class handler : public interface::handler<xcb_button_press_event_t> {
-  public:
-    virtual void press(xcb_button_press_event_t * const) = 0;
-    virtual void release(xcb_button_release_event_t * const) = 0;
-
-    virtual void handle(xcb_button_press_event_t * const e)
-    {
-      if (BUTTON == e->detail && (e->state & ~m_button_mask) == MODMASK) {
-        switch (e->response_type & ~0x80) {
-          case XCB_BUTTON_PRESS:
-            press(e);
-            break;
-
-          case XCB_BUTTON_RELEASE:
-            release(e);
-            break;
-
-          default:
-            break;
-        }
-      }
-    }
-
-  private:
-    const uint16_t m_button_mask =
-      XCB_BUTTON_MASK_1
-      | XCB_BUTTON_MASK_2
-      | XCB_BUTTON_MASK_3
-      | XCB_BUTTON_MASK_4
-      | XCB_BUTTON_MASK_5
-      ;
-
-    int numlockmask;
-};
-
-};
-
-template<typename E>
-class event {
-  public:
-    virtual ~event(void) {}
-}; // class event
+// template<typename E>
+// class handler {
+//   public:
+//     virtual inline void handle(E * const) {}
+// 
+//     virtual inline void
+//     handle(const std::shared_ptr<client> &, E * const e)
+//     {
+//       handle(e);
+//     }
+// }; // class handler
 
 class client : public x::window {
   public:
@@ -97,6 +60,32 @@ class client : public x::window {
         factory * m_factory = nullptr;
 
     }; // class factory
+
+    template<typename E>
+    class event {
+      public:
+        event(ptr & c, E * const e) : m_e(e), m_client(c) {}
+        inline E * const operator*(void) { return m_e; }
+        inline E * const operator->(void) { return m_e; }
+        inline ptr & client(void) { return m_client; }
+      private:
+        E * m_e;
+        ptr & m_client;
+    };
+
+    // template<typename E>
+    // event<E>
+    // make_event(ptr & c, E * const e)
+    // {
+    //   return event<E>(c, e);
+    // }
+
+    template<typename E>
+    class handler {
+      public:
+        virtual void handle(const event<E> &) = 0;
+      protected:
+    };
 
     class iterator
       : public std::iterator<std::random_access_iterator_tag, client::ptr> {
@@ -282,19 +271,19 @@ class client : public x::window {
 
     virtual ~client(void) {}
 
-    template<typename E>
-    client & dispatch(E * e)
-    {
-      try {
-        dynamic_cast<handler<E> &>(*this).handle(e);
-      } catch (...) {}
+    // template<typename E>
+    // client & dispatch(E * e)
+    // {
+    //   try {
+    //     dynamic_cast<handler<E> &>(*this).handle(e);
+    //   } catch (...) {}
 
-      if (m_client) {
-        return m_client->dispatch(e);
-      } else {
-        return *this;
-      }
-    }
+    //   if (m_client) {
+    //     return m_client->dispatch(e);
+    //   } else {
+    //     return *this;
+    //   }
+    // }
 
     virtual client & focus(xcb_input_focus_t revert_to = XCB_INPUT_FOCUS_PARENT)
     {
@@ -397,7 +386,57 @@ class manager {
     virtual client::ptr_iterator end(void) = 0;
 
     virtual client::ptr & operator[](const xcb_window_t &) = 0;
+}; // class manager
+
+namespace button {
+
+template<xcb_button_t BUTTON, uint16_t MODMASK = 0>
+class handler : public client::handler<xcb_button_press_event_t> {
+  public:
+    virtual void press(xcb_button_press_event_t * const) = 0;
+    virtual void release(xcb_button_release_event_t * const) = 0;
+
+    virtual void handle(xcb_button_press_event_t * const e)
+    {
+      if (BUTTON == e->detail && (e->state & ~m_button_mask) == MODMASK) {
+        switch (e->response_type & ~0x80) {
+          case XCB_BUTTON_PRESS:
+            press(e);
+            break;
+
+          case XCB_BUTTON_RELEASE:
+            release(e);
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
+
+  private:
+    const uint16_t m_button_mask =
+      XCB_BUTTON_MASK_1
+      | XCB_BUTTON_MASK_2
+      | XCB_BUTTON_MASK_3
+      | XCB_BUTTON_MASK_4
+      | XCB_BUTTON_MASK_5
+      ;
 };
+
+};
+
+template<typename E>
+class event {
+  public:
+    virtual ~event(void) {}
+}; // class event
+
+// template<typename E>
+// class client_event_handler {
+//   public:
+//     virtual void accept(E * const) = 0;
+// };
 
 }; // namespace interface
 
